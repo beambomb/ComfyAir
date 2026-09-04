@@ -3,5 +3,5 @@ solusi web cerdas berbasis cloud computing dan machine learning yang mengintegra
 
 ## AB to Z
 - Ketua Kelompok : 
-- Anggota 1 : 
+- Anggota 1 : Zakhrova Salsabila-24/534625/TK/59268 
 - Anggota 2 : Johannes De Deo Dimas Aryobimo-24/540351/TK/59948
