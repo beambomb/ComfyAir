@@ -1,0 +1,29 @@
+# Dependencies
+frontend/node_modules/
+node_modules/
+
+# Next.js build output
+frontend/.next/
+frontend/out/
+
+# Production
+build/
+dist/
+
+# Python / Backend
+backend/__pycache__/
+backend/*.pyc
+backend/.venv/
+backend/env/
+backend/venv/
+
+# Environment variables
+.env
+.env*.local
+*.env
+
+# IDE / System
+.vscode/
+.idea/
+.DS_Store
+*.log
