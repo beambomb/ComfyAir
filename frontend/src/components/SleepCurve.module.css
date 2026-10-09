@@ -1,0 +1,161 @@
+/* Full-bleed night band. Paper-colored grain keeps it printed rather than glossy. */
+.night {
+  --focus: var(--paper);
+  padding-block: clamp(72px, 9vw, 136px) clamp(64px, 8vw, 116px);
+  background-color: var(--night);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .953 0 0 0 0 .933 0 0 0 0 .898 0 0 0 .055 0'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
+  color: var(--paper);
+}
+
+.intro {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+}
+
+.eyebrow {
+  grid-column: 1 / -1;
+  color: var(--paper-dim);
+}
+
+.heading {
+  grid-column: 1 / span 8;
+  margin-top: 16px;
+  font-size: clamp(2.2rem, 4.6vw, 4.2rem);
+}
+
+.body {
+  grid-column: 1 / span 6;
+  max-width: 40ch;
+  margin-top: 22px;
+  color: var(--paper-dim);
+}
+
+.figure {
+  margin-top: clamp(36px, 5vw, 64px);
+}
+
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.compact {
+  display: none;
+}
+
+.bandA {
+  fill: rgba(243, 238, 229, 0.04);
+}
+
+.bandB {
+  fill: rgba(243, 238, 229, 0.08);
+}
+
+.bandLabel {
+  font-family: var(--face-mono);
+  letter-spacing: 0.03em;
+  fill: var(--paper-dim);
+}
+
+.grid {
+  stroke: rgba(243, 238, 229, 0.12);
+  stroke-width: 1;
+}
+
+.axis {
+  stroke: rgba(243, 238, 229, 0.45);
+  stroke-width: 1;
+}
+
+.tick {
+  font-family: var(--face-mono);
+  fill: var(--paper-dim);
+}
+
+.outdoor {
+  fill: none;
+  stroke: var(--heat);
+  stroke-width: 2;
+  stroke-dasharray: 6 6;
+}
+
+.habit {
+  stroke: var(--cold);
+  stroke-width: 2.6;
+  stroke-dasharray: 0 7;
+  stroke-linecap: round;
+}
+
+.setpoint {
+  fill: none;
+  stroke: var(--paper);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.setpointStart {
+  fill: var(--paper);
+}
+
+.labelOutdoor,
+.labelSetpoint,
+.labelHabit,
+.annotation {
+  font-family: var(--face-mono);
+  font-weight: 500;
+}
+
+.labelOutdoor {
+  fill: var(--heat-light);
+}
+
+.labelSetpoint {
+  font-weight: 600;
+  fill: var(--paper);
+}
+
+.labelHabit,
+.annotation {
+  fill: var(--cold);
+}
+
+.annotationDot {
+  fill: var(--night);
+  stroke: var(--cold);
+  stroke-width: 2.5;
+}
+
+.leader {
+  stroke: var(--cold);
+  stroke-width: 1.2;
+}
+
+.caption {
+  max-width: 72ch;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(243, 238, 229, 0.18);
+  font-family: var(--face-mono);
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--paper-dim);
+}
+
+@media (max-width: 899px) {
+  .heading,
+  .body {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 719px) {
+  .wide {
+    display: none;
+  }
+
+  .compact {
+    display: block;
+  }
+}

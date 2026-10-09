@@ -1,0 +1,79 @@
+.figure {
+  margin: 0;
+}
+
+.chart {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.grid {
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+
+.axis {
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+
+.tick {
+  font-family: var(--face-mono);
+  font-size: 13px;
+  fill: var(--ink-2);
+}
+
+.outdoor {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 2;
+  stroke-dasharray: 2 5;
+  stroke-linecap: round;
+}
+
+.setpoint {
+  fill: none;
+  stroke: var(--heat);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.setpointStart {
+  fill: var(--heat);
+}
+
+.now {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+
+.nowLabel {
+  font-family: var(--face-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  fill: var(--ink);
+}
+
+.labelOutdoor {
+  font-family: var(--face-mono);
+  font-size: 14px;
+  fill: var(--ink-2);
+}
+
+.labelSetpoint {
+  font-family: var(--face-mono);
+  font-size: 14px;
+  font-weight: 500;
+  fill: var(--heat-ink);
+}
+
+.caption {
+  margin-top: 12px;
+  font-family: var(--face-mono);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+}

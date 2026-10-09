@@ -1,0 +1,62 @@
+.display {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Segments sit a hair above the reflector, so they cast a crisp offset shadow. */
+  filter: drop-shadow(0.8px 1.1px 0 rgba(29, 37, 25, 0.2));
+}
+
+.on {
+  fill: var(--lcd-ink);
+}
+
+.ghost {
+  fill: var(--lcd-ink);
+  fill-opacity: 0.08;
+}
+
+.ringOn,
+.ringGhost {
+  fill: none;
+  stroke: var(--lcd-ink);
+  stroke-width: 2.6;
+}
+
+.ringGhost {
+  stroke-opacity: 0.08;
+}
+
+.text {
+  font-family: var(--face-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  fill: var(--lcd-ink);
+}
+
+.textOn {
+  fill-opacity: 1;
+}
+
+.textGhost {
+  fill-opacity: 0.14;
+}
+
+.digits {
+  animation: lcdRedraw 180ms steps(3, end) both;
+}
+
+@keyframes lcdRedraw {
+  from {
+    opacity: 0.2;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .digits {
+    animation: none;
+  }
+}

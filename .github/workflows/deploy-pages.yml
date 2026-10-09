@@ -1,0 +1,56 @@
+name: Deploy frontend to GitHub Pages
+
+on:
+  # Publish on every push to main...
+  push:
+    branches: [ main ]
+  # ...and allow manual runs from the Actions tab.
+  workflow_dispatch:
+
+# Permissions the Pages deployment needs.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one Pages deployment at a time; let an in-progress run finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Build static export
+        run: npm run build
+      - name: Disable Jekyll processing
+        # Keeps GitHub from stripping Next's _next/ asset folder.
+        run: touch out/.nojekyll
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

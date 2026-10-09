@@ -27,3 +27,6 @@ backend/venv/
 .idea/
 .DS_Store
 *.log
+
+# Agent task artifacts (plans, screenshots)
+.agents/

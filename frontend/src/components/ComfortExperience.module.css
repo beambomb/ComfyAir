@@ -1,0 +1,310 @@
+/* Hero: copy on the left, the remote on the right. Sits close under the masthead. */
+.hero {
+  padding-block: clamp(26px, 3.4vw, 46px) clamp(64px, 8vw, 112px);
+}
+
+.hero:focus {
+  outline: none;
+}
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+  align-items: start;
+}
+
+.copy {
+  grid-column: 1 / span 7;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--heat-ink);
+}
+
+.eyebrow::before {
+  content: "";
+  flex: none;
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+}
+
+.title {
+  margin-top: 16px;
+  font-size: clamp(3rem, 7.4vw, 6.75rem);
+}
+
+.lede {
+  max-width: 36ch;
+  margin-top: 26px;
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+
+.copy form {
+  margin-top: 30px;
+}
+
+.hint {
+  margin-top: 14px;
+  font-family: var(--face-display);
+  font-size: 1.125rem;
+  font-style: italic;
+  font-variation-settings: "SOFT" 100;
+  color: var(--ink-2);
+}
+
+.source {
+  margin-top: 8px;
+  font-family: var(--face-mono);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* Right column: the remote, its arrow note and the API status, behind a vertical hairline. */
+.device {
+  grid-column: 8 / -1;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  padding-left: var(--col-gap);
+  border-left: 1px solid var(--rule);
+}
+
+.stage {
+  position: relative;
+  align-self: flex-end;
+  margin-top: 10px;
+  margin-right: clamp(0px, 4vw, 56px);
+  font-size: clamp(13px, 3.4vw, 16px);
+}
+
+.note {
+  position: absolute;
+  top: 4.1em;
+  right: calc(100% - 1.4em);
+  display: flex;
+  flex-direction: column;
+  width: 10.5em;
+  transform: rotate(-3deg);
+  transform-origin: right center;
+  pointer-events: none;
+  /* Draw the note above the remote so the arrowhead lands on the plastic, not under it. */
+  z-index: 1;
+}
+
+.noteText {
+  max-width: 8.6em;
+  font-family: var(--face-mono);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.arrow {
+  width: 7em;
+  height: auto;
+  margin-top: 4px;
+  margin-left: 3.5em;
+  overflow: visible;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.api {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  align-self: flex-end;
+  margin-top: 46px;
+  margin-right: clamp(0px, 4vw, 56px);
+  font-family: var(--face-mono);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+.marker {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+}
+
+.api[data-link="unknown"] .marker {
+  border-style: dashed;
+}
+
+.api[data-link="online"] .marker {
+  background: var(--ink);
+}
+
+/* Savings: a slightly darker paper band so the receipt paper stands out. */
+.savings {
+  padding-block: clamp(64px, 8vw, 120px);
+  border-block: 1px solid var(--rule);
+  background-color: var(--paper-2);
+  background-image: var(--grain);
+}
+
+.savingsGrid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+  align-items: center;
+}
+
+.savingsCopy {
+  grid-column: 1 / span 5;
+}
+
+.heading {
+  margin-top: 16px;
+  font-size: clamp(2.2rem, 4.6vw, 4.2rem);
+}
+
+.body {
+  max-width: 38ch;
+  margin-top: 22px;
+}
+
+.pull {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  margin-top: 34px;
+  padding-block: 16px 18px;
+  border-block: 1px solid var(--ink);
+}
+
+.pullNumber {
+  font-family: var(--face-display);
+  font-size: clamp(4.2rem, 8vw, 6rem);
+  font-weight: 400;
+  font-variation-settings: "SOFT" 100;
+  font-optical-sizing: auto;
+  font-variant-numeric: lining-nums;
+  line-height: 0.8;
+  letter-spacing: -0.03em;
+  color: var(--heat);
+}
+
+.pullCaption {
+  max-width: 19ch;
+  padding-bottom: 2px;
+  font-family: var(--face-mono);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.assumptionsTitle {
+  margin-top: 34px;
+}
+
+.assumptions {
+  margin-top: 10px;
+}
+
+.assumptions div {
+  display: grid;
+  grid-template-columns: minmax(7.5rem, 34%) 1fr;
+  gap: 12px;
+  padding-block: 9px;
+  border-top: 1px solid var(--rule);
+}
+
+.assumptions div:last-child {
+  border-bottom: 1px solid var(--rule);
+}
+
+.assumptions dt {
+  font-family: var(--face-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.9;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.assumptions dd {
+  font-size: 0.9375rem;
+}
+
+.footnote {
+  max-width: 44ch;
+  margin-top: 16px;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.receiptColumn {
+  grid-column: 7 / span 6;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 899px) {
+  .copy,
+  .device,
+  .savingsCopy,
+  .receiptColumn {
+    grid-column: 1 / -1;
+  }
+
+  .device {
+    align-items: center;
+    margin-top: 44px;
+    padding: 30px 0 0;
+    border-top: 1px solid var(--rule);
+    border-left: 0;
+  }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: center;
+    margin: 0;
+  }
+
+  .note {
+    position: static;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 2px;
+    width: auto;
+    margin: 0 0 4px -3em;
+    transform: rotate(-3deg);
+  }
+
+  .noteText {
+    padding-top: 6px;
+  }
+
+  .arrow {
+    width: 4.6em;
+    margin: 0;
+    transform: rotate(78deg) translate(10%, -8%);
+  }
+
+  .api {
+    align-self: center;
+    margin: 34px 0 0;
+  }
+
+  .receiptColumn {
+    margin-top: 56px;
+  }
+}

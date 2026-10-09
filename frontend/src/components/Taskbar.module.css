@@ -1,0 +1,127 @@
+/* Persistent top bar on both routes. Sticky, so the view switch stays reachable. */
+.taskbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding-top: clamp(14px, 2.4vw, 30px);
+  background-color: var(--paper);
+  background-image: var(--grain);
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px 40px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.brand {
+  display: block;
+  text-decoration: none;
+}
+
+.brand:hover .wordmark {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.12em;
+}
+
+.wordmark {
+  display: block;
+  font-family: var(--face-display);
+  font-size: 2.75rem;
+  font-weight: 600;
+  font-variation-settings: "SOFT" 100;
+  font-optical-sizing: auto;
+  line-height: 0.9;
+  letter-spacing: -0.025em;
+}
+
+.motto {
+  display: block;
+  margin-top: 8px;
+  font-family: var(--face-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 6px 24px;
+  border-bottom: 4px double var(--ink);
+}
+
+.views {
+  display: flex;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  list-style: none;
+}
+
+/* Each view is an index tab: a thick ink underline marks the active one, like a
+   ruled register, not a glossy pill. 44px minimum target in both directions. */
+.tab {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 18px;
+  font-family: var(--face-mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ink-2);
+  border-bottom: 3px solid transparent;
+}
+
+.tab:first-child {
+  padding-left: 0;
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab[data-active] {
+  color: var(--ink);
+  border-bottom-color: var(--heat);
+}
+
+.edition {
+  display: flex;
+  align-items: center;
+  font-family: var(--face-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+@media (max-width: 599px) {
+  .edition {
+    display: none;
+  }
+
+  .wordmark {
+    font-size: 2.4rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .editionMeta {
+    display: none;
+  }
+}

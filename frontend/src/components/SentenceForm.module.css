@@ -1,0 +1,186 @@
+.form {
+  font-family: var(--face-display);
+  font-size: clamp(1.45rem, 1.05rem + 1.25vw, 1.9rem);
+  font-variation-settings: "SOFT" 100;
+  font-optical-sizing: auto;
+  line-height: 1.6;
+  letter-spacing: -0.005em;
+}
+
+.line + .line {
+  margin-top: 0.15em;
+}
+
+/* Stepper: [−] value [+], the value set like a filled-in blank on a printed form. */
+.stepper {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.22em;
+  white-space: nowrap;
+}
+
+.step {
+  position: relative;
+  top: -0.12em;
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0 0 2px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: transparent;
+  font-family: var(--face-mono);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease,
+    transform 80ms ease-out;
+}
+
+.step:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.step:active {
+  transform: translateY(1px);
+}
+
+.step[aria-disabled="true"] {
+  border-color: rgba(27, 24, 20, 0.3);
+  background: transparent;
+  color: rgba(27, 24, 20, 0.35);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.value {
+  display: inline-block;
+  min-width: 4ch;
+  padding-inline: 0.1em;
+  border-bottom: 2px dotted var(--ink);
+  font-family: var(--face-mono);
+  font-size: 0.86em;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+  text-align: center;
+}
+
+/* Mode words, with a pen loop around the chosen one. */
+.modes {
+  white-space: nowrap;
+}
+
+.modeItem {
+  display: inline;
+}
+
+.slash {
+  color: var(--ink-2);
+}
+
+.option {
+  position: relative;
+  display: inline-block;
+  margin-inline: 0.1em;
+  padding-inline: 0.08em;
+  color: var(--ink-2);
+  text-decoration: underline dotted rgba(27, 24, 20, 0.45);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+  transition: color 120ms ease;
+}
+
+.option:hover {
+  color: var(--ink);
+}
+
+.option[data-checked] {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.option:has(.radio:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 0.3em;
+  border-radius: 6px;
+}
+
+.radio {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Loop overshoot is kept smaller than the gap to the " / " separators. */
+.circle {
+  position: absolute;
+  top: -0.2em;
+  left: -0.32em;
+  width: calc(100% + 0.64em);
+  height: calc(100% + 0.32em);
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* The last mode sits right before the sentence's period: no extra gap there,
+   except room for the loop when it is the chosen one. */
+.modeItem:last-child .option {
+  margin-right: 0;
+}
+
+.modeItem:last-child .option[data-checked] {
+  margin-right: 0.24em;
+}
+
+.circle path {
+  fill: none;
+  stroke: var(--heat);
+  stroke-width: 2.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: penDraw 220ms cubic-bezier(0.4, 0.1, 0.3, 1) forwards;
+}
+
+@keyframes penDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (max-width: 599px) {
+  .step {
+    width: 34px;
+    height: 34px;
+    font-size: 19px;
+  }
+
+  .modes {
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .circle path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .step,
+  .option {
+    transition: none;
+  }
+}

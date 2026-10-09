@@ -1,0 +1,254 @@
+/* Everything is sized in em from this one font-size, so the remote scales as a unit. */
+.remote {
+  position: relative;
+  width: 16em;
+  padding: 1.35em 1.3em 1.5em;
+  font-size: clamp(13px, 3.4vw, 16px);
+  border-radius: 3em 3em 3.6em 3.6em;
+  background:
+    linear-gradient(100deg, #f5f1ea 0%, var(--plastic) 38%, var(--plastic) 62%, var(--plastic-shade) 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -0.4em 0.7em -0.3em rgba(27, 24, 20, 0.16),
+    inset -0.35em 0 0.6em -0.35em rgba(27, 24, 20, 0.14),
+    0 0 0 1px rgba(27, 24, 20, 0.17),
+    0 2px 0 rgba(27, 24, 20, 0.12),
+    10px 22px 26px -12px rgba(27, 24, 20, 0.42),
+    4px 8px 10px -6px rgba(27, 24, 20, 0.2);
+  transform: rotate(-4deg);
+  transition: transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.remote:hover,
+.remote:focus-within {
+  transform: rotate(-1.5deg);
+}
+
+/* Infrared window at the nose. */
+.ir {
+  position: relative;
+  width: 3.4em;
+  height: 1em;
+  margin-inline: auto;
+  border-radius: 0.5em;
+  background: linear-gradient(180deg, #2b0d09 0%, #4d1912 70%, #5f2218 100%);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.55),
+    0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.irFlash {
+  position: absolute;
+  inset: 0.2em 0.5em;
+  border-radius: 0.3em;
+  background: #e4573a;
+  opacity: 0;
+  animation: irBlink 700ms step-end both;
+}
+
+@keyframes irBlink {
+  0% {
+    opacity: 1;
+    box-shadow: 0 0 0 2px rgba(228, 87, 58, 0.35);
+  }
+  14% {
+    opacity: 0;
+  }
+  28% {
+    opacity: 1;
+    box-shadow: 0 0 0 2px rgba(228, 87, 58, 0.35);
+  }
+  42%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.brand {
+  margin-top: 0.75em;
+  font-family: var(--face-mono);
+  font-size: max(9.5px, 0.62em);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+/* Recessed LCD with a slightly darker plastic frame. */
+.lcd {
+  margin-top: 0.8em;
+  padding: 0.5em 0.55em 0.4em;
+  border-radius: 0.8em;
+  background-color: var(--lcd);
+  background-image: linear-gradient(168deg, rgba(255, 255, 255, 0.2) 0 34%, rgba(255, 255, 255, 0) 34%);
+  box-shadow:
+    inset 0 0.18em 0.4em rgba(29, 37, 25, 0.38),
+    inset 0 0 0 1px rgba(29, 37, 25, 0.3),
+    0 0 0 0.3em var(--plastic-shade),
+    0 0 0 calc(0.3em + 1px) rgba(27, 24, 20, 0.14),
+    0 calc(0.3em + 2px) 0 rgba(255, 255, 255, 0.7);
+  transition: background-color 200ms ease;
+}
+
+.lcdOff {
+  background-color: #aeb59c;
+}
+
+.controls {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: 1.55em;
+  padding-inline: 0.5em 0.35em;
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6em;
+}
+
+.modeButton,
+.powerButton {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  transition:
+    transform 80ms ease-out,
+    box-shadow 80ms ease-out;
+}
+
+.modeButton {
+  width: 5.2em;
+  height: 2.6em;
+  border-radius: 1.3em;
+  background: linear-gradient(180deg, #f8f5ef 0%, #e6dfd3 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -0.15em 0.25em rgba(27, 24, 20, 0.08),
+    0 0 0 1px rgba(27, 24, 20, 0.26),
+    0 0.2em 0 #bdb4a5,
+    0 0.32em 0.55em rgba(27, 24, 20, 0.2);
+}
+
+.powerButton {
+  width: 3.6em;
+  height: 3.6em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #db6440 0%, var(--heat) 52%, #9d3716 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 0 0 1px rgba(90, 24, 8, 0.5),
+    0 0.2em 0 #86300f,
+    0 0.32em 0.6em rgba(27, 24, 20, 0.28);
+}
+
+.modeButton:active {
+  transform: translateY(0.14em);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -0.15em 0.25em rgba(27, 24, 20, 0.08),
+    0 0 0 1px rgba(27, 24, 20, 0.26),
+    0 0.06em 0 #bdb4a5,
+    0 0.12em 0.25em rgba(27, 24, 20, 0.2);
+}
+
+.powerButton:active {
+  transform: translateY(0.14em);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 0 0 1px rgba(90, 24, 8, 0.5),
+    0 0.06em 0 #86300f,
+    0 0.12em 0.25em rgba(27, 24, 20, 0.28);
+}
+
+.modeButton:focus-visible,
+.powerButton:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+}
+
+.powerGlyph {
+  width: 1.45em;
+  height: 1.45em;
+  fill: none;
+  stroke: var(--paper);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+/* Prints on the casing: flat, never on the terracotta. */
+.print {
+  font-family: var(--face-mono);
+  font-size: max(10px, 0.625em);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  color: var(--ink-2);
+}
+
+.band {
+  margin-top: 1.4em;
+  padding-block: 0.5em;
+  border-block: 1px solid rgba(27, 24, 20, 0.28);
+  font-family: var(--face-mono);
+  font-size: max(9.5px, 0.6em);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  line-height: 1;
+  text-align: center;
+  color: var(--ink-2);
+}
+
+/* Moulded grip ribs: a dark groove with a light lip under it. */
+.grip {
+  width: 7.5em;
+  height: 2.1em;
+  margin: 1.2em auto 0;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(27, 24, 20, 0.16) 0 1px,
+    rgba(255, 255, 255, 0.7) 1px 2px,
+    rgba(255, 255, 255, 0) 2px 0.42em
+  );
+  -webkit-mask: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  mask: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+}
+
+@media (max-width: 899px) {
+  .remote {
+    transform: rotate(-3deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .remote {
+    transition: none;
+  }
+
+  .remote:hover,
+  .remote:focus-within {
+    transform: rotate(-4deg);
+  }
+
+  .irFlash {
+    animation: none;
+  }
+
+  .modeButton,
+  .powerButton {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (max-width: 899px) {
+  .remote:hover,
+  .remote:focus-within {
+    transform: rotate(-3deg);
+  }
+}

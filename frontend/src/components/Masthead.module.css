@@ -1,0 +1,33 @@
+/* The "ear": dateline and the live reading, like the weather box beside a
+   nameplate. Shared by MastheadLive, used inside the Taskbar top row. */
+.ear {
+  font-family: var(--face-mono);
+  font-size: 0.75rem;
+  line-height: 1.6;
+  text-align: right;
+}
+
+.dateline {
+  color: var(--ink);
+}
+
+.reading {
+  color: var(--ink-2);
+}
+
+.reading[data-status="live"]::before {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  margin-right: 0.5em;
+  border-radius: 50%;
+  background: var(--heat);
+  vertical-align: 0.05em;
+}
+
+@media (max-width: 599px) {
+  .ear {
+    text-align: left;
+  }
+}
