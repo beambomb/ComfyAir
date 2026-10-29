@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     template: "%s",
   },
   description:
-    "ComfyAir membaca cuaca di luar, menyarankan setpoint AC, mengatur kurva suhu tidur, dan menghitung perkiraan hemat listrik dalam Rupiah. Tanpa alat tambahan.",
+    "ComfyAir membaca cuaca di luar, menyarankan setpoint AC, mengatur kurva suhu tidur, dan menghitung perkiraan hemat listrik dalam Rupiah sesuai daya AC dan tarif listrikmu. Tanpa alat tambahan.",
 };
 
 export const viewport: Viewport = {

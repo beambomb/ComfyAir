@@ -69,11 +69,3 @@
   font-weight: 500;
   fill: var(--heat-ink);
 }
-
-.caption {
-  margin-top: 12px;
-  font-family: var(--face-mono);
-  font-size: 0.75rem;
-  line-height: 1.5;
-  color: var(--ink-2);
-}

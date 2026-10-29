@@ -1,7 +1,14 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { MODE_LABEL, MODES } from "@/lib/comfort";
+import {
+  AC_POWER_OPTIONS,
+  formatPercent,
+  formatRupiah,
+  MODE_LABEL,
+  MODES,
+  monthlyBill,
+} from "@/lib/comfort";
 import {
   nowOffset,
   tonightOutdoor,
@@ -47,6 +54,7 @@ export default function Dashboard() {
   const { weather, controls } = useComfortState();
   const dispatch = useComfortDispatch();
   const { rec } = useRecommendation(controls.outdoorTemp, controls.humidity, controls.mode);
+  const bill = monthlyBill(rec.savingsPercent, 30, controls.acPowerKw, controls.tariffPerKwh);
 
   const minute = useSyncExternalStore(subscribeMinute, getMinute, getServerMinute);
   const wibNow = minute === null ? null : wibWallClock(minute * 60_000);
@@ -148,6 +156,66 @@ export default function Dashboard() {
                 : weather.status === "sample"
                   ? "angka contoh"
                   : "membaca…"}
+            </p>
+          </section>
+
+          {/* B2. Spesifikasi AC */}
+          <section aria-labelledby="panel-specs" className={`${styles.panel} ${styles.specsPanel}`}>
+            <p id="panel-specs" className={`label ${styles.panelLabel}`}>
+              Spesifikasi AC
+            </p>
+
+            <div className={styles.specField}>
+              <label htmlFor="ac-power">Daya AC</label>
+              <select
+                id="ac-power"
+                className={styles.specInput}
+                value={controls.acPowerKw}
+                onChange={(e) => dispatch({ type: "acPower/set", value: Number(e.target.value) })}
+              >
+                {AC_POWER_OPTIONS.map((o) => (
+                  <option key={o.kw} value={o.kw}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className={styles.specField}>
+              <label htmlFor="ac-tariff">Tarif listrik (Rp/kWh)</label>
+              <input
+                id="ac-tariff"
+                className={styles.specInput}
+                type="number"
+                min={0}
+                step={0.01}
+                value={controls.tariffPerKwh}
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  dispatch({
+                    type: "tariff/set",
+                    value: Number.isFinite(v) && v > 0 ? v : controls.tariffPerKwh,
+                  });
+                }}
+              />
+            </div>
+
+            <dl className={styles.ledger}>
+              <div className={styles.ledgerRow}>
+                <dt>Biaya di 20°C</dt>
+                <dd>{formatRupiah(bill.baselineRp)}</dd>
+              </div>
+              <div className={styles.ledgerRow}>
+                <dt>Biaya di {rec.setpoint}°C</dt>
+                <dd>{formatRupiah(bill.optimizedRp)}</dd>
+              </div>
+              <div className={`${styles.ledgerRow} ${styles.ledgerTotal}`}>
+                <dt>Hemat / bulan</dt>
+                <dd>{formatRupiah(bill.savedRp)}</dd>
+              </div>
+            </dl>
+            <p className={styles.footnote}>
+              {formatPercent(rec.savingsPercent)} lebih hemat · perkiraan 30 malam
             </p>
           </section>
 

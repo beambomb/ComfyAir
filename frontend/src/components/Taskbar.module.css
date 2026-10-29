@@ -99,29 +99,8 @@
   border-bottom-color: var(--heat);
 }
 
-.edition {
-  display: flex;
-  align-items: center;
-  font-family: var(--face-mono);
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-2);
-}
-
 @media (max-width: 599px) {
-  .edition {
-    display: none;
-  }
-
   .wordmark {
     font-size: 2.4rem;
-  }
-}
-
-@media (max-width: 420px) {
-  .editionMeta {
-    display: none;
   }
 }

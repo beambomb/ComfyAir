@@ -8,7 +8,7 @@ import SectionNav from "@/components/SectionNav";
 export const metadata: Metadata = {
   title: "ComfyAir · Presentasi",
   description:
-    "Presentasi lengkap ComfyAir: simulasi setpoint AC dari cuaca live, kurva suhu tidur, dan perkiraan hemat listrik dalam Rupiah.",
+    "Presentasi lengkap ComfyAir: simulasi setpoint AC dari cuaca live, kurva suhu tidur, dan perkiraan hemat listrik dalam Rupiah sesuai daya AC dan tarif listrikmu.",
 };
 
 export default function Presentasi() {

@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useReducer, type Dispatch, type R
 import {
   clampOutdoor,
   DEFAULT_MODE,
+  ENERGY,
   HUMIDITY,
   nextMode,
   OUTDOOR,
@@ -28,6 +29,10 @@ export type Controls = {
   humidity: number;
   mode: Mode;
   power: boolean;
+  /** AC rated power in kW, used by the cost simulation. */
+  acPowerKw: number;
+  /** Electricity tariff in Rupiah per kWh, used by the cost simulation. */
+  tariffPerKwh: number;
   /** True once the visitor changed a number; live weather no longer overwrites it. */
   touched: boolean;
 };
@@ -41,7 +46,9 @@ export type ComfortAction =
   | { type: "humidity/step"; delta: 5 | -5 }
   | { type: "mode/set"; mode: Mode }
   | { type: "mode/cycle" }
-  | { type: "power/toggle" };
+  | { type: "power/toggle" }
+  | { type: "acPower/set"; value: number }
+  | { type: "tariff/set"; value: number };
 
 const initialState: ComfortState = {
   weather: { status: "loading" },
@@ -50,6 +57,8 @@ const initialState: ComfortState = {
     humidity: HUMIDITY.sample,
     mode: DEFAULT_MODE,
     power: true,
+    acPowerKw: ENERGY.acPowerKw,
+    tariffPerKwh: ENERGY.tariffPerKwh,
     touched: false,
   },
 };
@@ -106,6 +115,10 @@ function reducer(state: ComfortState, action: ComfortAction): ComfortState {
       return { ...state, controls: { ...controls, mode: nextMode(controls.mode) } };
     case "power/toggle":
       return { ...state, controls: { ...controls, power: !controls.power } };
+    case "acPower/set":
+      return { ...state, controls: { ...controls, acPowerKw: action.value } };
+    case "tariff/set":
+      return { ...state, controls: { ...controls, tariffPerKwh: action.value } };
   }
 }
 

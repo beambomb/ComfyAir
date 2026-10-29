@@ -105,12 +105,18 @@ export const ENERGY = {
   baselineSetpoint: 20,
 } as const;
 
-/** 0.8 kW x 8 h x 30 nights = 192 kWh per month at the 20 C habit. */
-export const BASELINE_KWH = ENERGY.acPowerKw * ENERGY.hoursPerNight * ENERGY.nightsPerMonth;
+// Daya AC options for the dashboard "Spesifikasi AC" panel. The kW figures match
+// the ENERGY.acPowerKw convention (a 1 PK split AC draws roughly 0.8 kW).
+export const AC_POWER_OPTIONS = [
+  { label: "0,5 PK", kw: 0.4 },
+  { label: "0,75 PK", kw: 0.6 },
+  { label: "1 PK", kw: 0.8 },
+  { label: "1,5 PK", kw: 1.2 },
+  { label: "2 PK", kw: 1.6 },
+] as const;
 
 export type MonthlyBill = {
   baselineKwh: number;
-  optimizedKwh: number;
   baselineRp: number;
   optimizedRp: number;
   savedRp: number;
@@ -123,31 +129,26 @@ export type MonthlyBill = {
  * round the baseline and optimized lines, then subtract so the printed total
  * always adds up.
  */
-export function monthlyBill(savingsPct: number, nights: number = ENERGY.nightsPerMonth): MonthlyBill {
-  const kwh = ENERGY.acPowerKw * ENERGY.hoursPerNight * nights;
+export function monthlyBill(
+  savingsPct: number,
+  nights: number = ENERGY.nightsPerMonth,
+  acPowerKw: number = ENERGY.acPowerKw,
+  tariffPerKwh: number = ENERGY.tariffPerKwh,
+): MonthlyBill {
+  const kwh = acPowerKw * ENERGY.hoursPerNight * nights;
   // 192 kWh x Rp1.444,70 = Rp277.382,40 for the 30-night month at 20 C.
-  const baselineCost = kwh * ENERGY.tariffPerKwh;
+  const baselineCost = kwh * tariffPerKwh;
   const optimizedCost = baselineCost * (1 - savingsPct / 100);
   const baselineRp = Math.round(baselineCost);
   const optimizedRp = Math.round(optimizedCost);
   return {
     baselineKwh: kwh,
-    optimizedKwh: kwh * (1 - savingsPct / 100),
     baselineRp,
     optimizedRp,
     // Subtract the rounded lines so the printed receipt always adds up.
     savedRp: baselineRp - optimizedRp,
   };
 }
-
-/** The three periods the dashboard savings panel can show. */
-export const PERIODS = [
-  { id: "daily", label: "Harian", nights: 1 },
-  { id: "weekly", label: "Mingguan", nights: 7 },
-  { id: "monthly", label: "Bulanan", nights: 30 },
-] as const;
-
-export type PeriodId = (typeof PERIODS)[number]["id"];
 
 // Decimal formatting only. `style: "currency"` inserts spacing characters that
 // differ between ICU versions (Node prerender vs. the visitor's browser).

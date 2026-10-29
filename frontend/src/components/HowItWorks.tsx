@@ -11,7 +11,7 @@ const STEPS = [
   },
   {
     title: "Rekomendasi",
-    body: "Hasilnya tiga hal: satu angka untuk remote, kurva suhu sepanjang tidur, dan perkiraan hemat dalam Rupiah.",
+    body: "Hasilnya tiga hal: satu angka untuk remote, kurva suhu sepanjang tidur, dan perkiraan hemat dalam Rupiah — dihitung sesuai daya AC dan tarif listrik yang kamu set.",
   },
 ];
 

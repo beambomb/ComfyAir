@@ -115,7 +115,8 @@ export default function ComfortExperience() {
             <p className={styles.body}>
               Setiap 1°C di atas kebiasaan 20°C, kompresor kerja lebih santai. Model ComfyAir
               menghitungnya sekitar 6,5% per derajat. Struknya ikut berubah setiap kamu
-              mengutak-atik remote.
+              mengutak-atik remote — dan di dasbor, angkanya menyesuaikan daya AC dan tarif listrik
+              yang kamu isi sendiri.
             </p>
 
             <div className={styles.pull}>
@@ -127,7 +128,7 @@ export default function ComfortExperience() {
             <dl className={styles.assumptions}>
               <div>
                 <dt>Daya AC</dt>
-                <dd>1 PK, kira-kira 800 W</dd>
+                <dd>1 PK (±800 W), bawaan</dd>
               </div>
               <div>
                 <dt>Pemakaian</dt>
@@ -135,7 +136,7 @@ export default function ComfortExperience() {
               </div>
               <div>
                 <dt>Tarif listrik</dt>
-                <dd>{formatTariff()} per kWh</dd>
+                <dd>{formatTariff()} per kWh, bawaan</dd>
               </div>
               <div>
                 <dt>Patokan</dt>
@@ -143,8 +144,8 @@ export default function ComfortExperience() {
               </div>
             </dl>
             <p className={styles.footnote}>
-              Ini simulasi, bukan tagihan PLN. Angka aslinya tergantung AC, ruangan, dan
-              kebiasaanmu.
+              Ini simulasi, bukan tagihan PLN. Di dasbor kamu bisa ganti daya AC dan tarif
+              listriknya; angka aslinya tetap tergantung AC, ruangan, dan kebiasaanmu.
             </p>
           </div>
 

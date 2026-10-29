@@ -56,7 +56,7 @@ export default function Receipt({ rec }: { rec: Recommendation }) {
 
         <dl className={`${styles.rows} ${styles.ruled}`}>
           <Row
-            term={`AC 1 PK × ${ENERGY.hoursPerNight} jam × ${ENERGY.nightsPerMonth}`}
+            term={`AC 1 PK (bawaan) × ${ENERGY.hoursPerNight} jam × ${ENERGY.nightsPerMonth}`}
             value={formatKwh(bill.baselineKwh)}
           />
           <Row term="Tarif per kWh" value={formatTariff()} />
