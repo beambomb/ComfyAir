@@ -44,34 +44,24 @@
   color: var(--ink-2);
 }
 
-/* Explicit placement. DOM order is A setpoint, B cuaca, C malam, D hemat,
-   E profil. A anchors the left and is tall; the night chart gets the width.
-   The setpoint number (the LCD) is the biggest thing on the page. */
+/* Explicit placement. DOM order is A setpoint, B cuaca, C malam.
+   Top row is two panels side by side; the night chart sits on the row below,
+   spanning the full width under both. Cuaca luar takes the larger share. */
 .setpointPanel {
   grid-column: 1 / span 5;
-  grid-row: 1 / span 2;
+  grid-row: 1;
 }
 
-/* B cuaca */
+/* B cuaca — wider right column */
 .panel:nth-child(2) {
   grid-column: 6 / span 7;
   grid-row: 1;
 }
 
+/* C malam — full-width chart under the two panels above */
 .nightPanel {
-  grid-column: 6 / span 7;
+  grid-column: 1 / span 12;
   grid-row: 2;
-}
-
-.savingsPanel {
-  grid-column: 1 / span 7;
-  grid-row: 3;
-}
-
-/* E profil */
-.panel:nth-child(5) {
-  grid-column: 8 / span 5;
-  grid-row: 3;
 }
 
 .lcd {
@@ -347,9 +337,7 @@
 
   .setpointPanel,
   .nightPanel,
-  .savingsPanel,
-  .panel:nth-child(2),
-  .panel:nth-child(5) {
+  .panel:nth-child(2) {
     grid-column: 1 / -1;
     grid-row: auto;
   }

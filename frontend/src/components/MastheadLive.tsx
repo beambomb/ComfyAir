@@ -2,7 +2,6 @@
 
 import { useSyncExternalStore } from "react";
 import { formatDateline } from "@/lib/dateline";
-import { useComfortState, type WeatherState } from "./ComfortProvider";
 import styles from "./Masthead.module.css";
 
 // Minute-resolution clock. The server snapshot is null, so the prerendered HTML
@@ -20,20 +19,8 @@ function getServerMinute(): number | null {
   return null;
 }
 
-function readingText(weather: WeatherState): string {
-  switch (weather.status) {
-    case "loading":
-      return "membaca cuaca…";
-    case "live":
-      return `Di luar ${Math.round(weather.temp)}°C · lembap ${Math.round(weather.humidity)}%`;
-    case "sample":
-      return "cuaca live tidak terjangkau";
-  }
-}
-
 export default function MastheadLive() {
   const minute = useSyncExternalStore(subscribeMinute, getMinute, getServerMinute);
-  const { weather } = useComfortState();
   const dateline = minute === null ? null : formatDateline(minute * 60_000);
 
   return (
@@ -41,9 +28,6 @@ export default function MastheadLive() {
       <p className={styles.dateline}>
         Yogyakarta ·{" "}
         {dateline ? <time dateTime={dateline.iso}>{dateline.text}</time> : "hari ini"}
-      </p>
-      <p className={styles.reading} data-status={weather.status}>
-        {readingText(weather)}
       </p>
     </div>
   );

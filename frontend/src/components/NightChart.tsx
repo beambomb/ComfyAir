@@ -116,7 +116,6 @@ export default function NightChart({ outdoor, nowX, caption, outdoorLabel }: Nig
           ComfyAir
         </text>
       </svg>
-      <figcaption className={styles.caption}>{caption}</figcaption>
     </figure>
   );
 }

@@ -6,8 +6,8 @@ import MastheadLive from "./MastheadLive";
 import styles from "./Taskbar.module.css";
 
 const VIEWS = [
-  { href: "/", label: "Dasbor", sheet: "Lembar No. 01" },
-  { href: "/presentasi", label: "Presentasi", sheet: "Lembar No. 02" },
+  { href: "/", label: "Dasbor" },
+  { href: "/presentasi", label: "Presentasi" },
 ] as const;
 
 // usePathname returns the path without basePath, but with trailingSlash on it
@@ -20,7 +20,6 @@ function isActive(pathname: string, href: string): boolean {
 
 export default function Taskbar() {
   const pathname = usePathname();
-  const active = VIEWS.find((view) => isActive(pathname, view.href)) ?? VIEWS[0];
 
   return (
     <header className={styles.taskbar}>
@@ -52,9 +51,6 @@ export default function Taskbar() {
               })}
             </ul>
           </nav>
-          <p className={styles.edition}>
-            {active.sheet} <span className={styles.editionMeta}>· Senior Project TI</span>
-          </p>
         </div>
       </div>
     </header>
