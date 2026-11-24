@@ -1,4 +1,4 @@
-"""End-to-end backend API, ML, auth, persistence, and WebSocket tests."""
+"""End-to-end backend API, ML calibration, auth, persistence, and WebSocket tests."""
 
 from __future__ import annotations
 
@@ -69,24 +69,63 @@ def test_ml_prediction_humidity_and_mode_sensitivity(client: TestClient):
     assert p1["raw_predicted_temp"] > p2["raw_predicted_temp"]
 
 
+def test_ml_comfort_feedback_calibration_and_reset(client: TestClient):
+    base_res = client.post(
+        "/api/v1/predict",
+        json={"outdoor_temp": 26.0, "humidity": 85.0, "mode": "SLEEP", "hour": 17},
+    )
+    assert base_res.status_code == 200
+    base_raw = base_res.json()["raw_predicted_temp"]
+    assert base_res.json()["personal_bias_c"] == 0.0
+    assert base_res.json()["feedback_count"] == 0
+
+    fb1 = client.post(
+        "/api/v1/feedback",
+        json={
+            "outdoor_temp": 26.0,
+            "humidity": 85.0,
+            "mode": "SLEEP",
+            "predicted_setpoint": base_res.json()["recommended_setpoint"],
+            "rating": "too_cold",
+        },
+    )
+    assert fb1.status_code == 200
+    assert fb1.json()["personal_bias_c"] > 0.0
+    assert fb1.json()["feedback_count"] == 1
+
+    calibrated_res = client.post(
+        "/api/v1/predict",
+        json={"outdoor_temp": 26.0, "humidity": 85.0, "mode": "SLEEP", "hour": 17},
+    )
+    assert calibrated_res.status_code == 200
+    assert calibrated_res.json()["personal_bias_c"] == fb1.json()["personal_bias_c"]
+    assert calibrated_res.json()["raw_predicted_temp"] > base_raw
+
+    summary = client.get("/api/v1/feedback")
+    assert summary.status_code == 200
+    assert summary.json()["feedback_count"] == 1
+    assert len(summary.json()["recent"]) == 1
+
+    reset = client.delete("/api/v1/feedback")
+    assert reset.status_code == 200
+    assert reset.json()["personal_bias_c"] == 0.0
+    assert reset.json()["feedback_count"] == 0
+
+
 def test_auth_lifecycle_and_demo_account(client: TestClient):
-    # Invalid login fails with 401
     bad = client.post(
         "/api/v1/auth/login",
         json={"email": "demo@comfyair.id", "password": "wrong-password"},
     )
     assert bad.status_code == 401
 
-    # Demo user works out of the box
     demo_login = client.post(
         "/api/v1/auth/login",
         json={"email": "demo@comfyair.id", "password": "comfyair123"},
     )
     assert demo_login.status_code == 200
-    demo_data = demo_login.json()
-    assert demo_data["user"]["email"] == "demo@comfyair.id"
+    assert demo_login.json()["user"]["email"] == "demo@comfyair.id"
 
-    # Register new user
     reg = client.post(
         "/api/v1/auth/register",
         json={
@@ -104,19 +143,14 @@ def test_auth_lifecycle_and_demo_account(client: TestClient):
     assert me.status_code == 200
     assert me.json()["email"] == "tester@ugm.ac.id"
 
-    # Unauthenticated /me rejected
     assert client.get("/api/v1/auth/me").status_code == 401
 
-    # Refresh token rotation
     ref = client.post("/api/v1/auth/refresh", json={"refresh_token": refresh})
     assert ref.status_code == 200
     new_refresh = ref.json()["refresh_token"]
     assert new_refresh != refresh
-
-    # Old refresh token revoked
     assert client.post("/api/v1/auth/refresh", json={"refresh_token": refresh}).status_code == 401
 
-    # Logout revokes current refresh token
     out = client.post("/api/v1/auth/logout", json={"refresh_token": new_refresh})
     assert out.status_code == 200
     assert (
@@ -125,7 +159,7 @@ def test_auth_lifecycle_and_demo_account(client: TestClient):
     )
 
 
-def test_preferences_sleep_profiles_and_savings_logs(client: TestClient):
+def test_preferences_and_savings_logs(client: TestClient):
     login = client.post(
         "/api/v1/auth/login",
         json={"email": "demo@comfyair.id", "password": "comfyair123"},
@@ -133,7 +167,6 @@ def test_preferences_sleep_profiles_and_savings_logs(client: TestClient):
     token = login.json()["access_token"]
     headers = _auth_headers(token)
 
-    # Preferences CRUD
     pref_get = client.get("/api/v1/preferences", headers=headers)
     assert pref_get.status_code == 200
     assert pref_get.json()["preferred_city"] == "Yogyakarta"
@@ -147,21 +180,6 @@ def test_preferences_sleep_profiles_and_savings_logs(client: TestClient):
     assert pref_put.json()["ac_power_pk"] == 1.5
     assert pref_put.json()["preferred_city"] == "Jakarta"
 
-    # Sleep curve & profile CRUD
-    curve = client.post("/api/v1/sleep-curve", json={})
-    assert curve.status_code == 200
-    assert curve.json()["total_sleep_hours"] == 8
-
-    sp_put = client.put(
-        "/api/v1/sleep-profiles",
-        headers=headers,
-        json={"bedtime": "23:00", "wake_time": "06:00", "start_temp": 23, "deep_sleep_temp": 25},
-    )
-    assert sp_put.status_code == 200
-    assert sp_put.json()["bedtime"] == "23:00"
-    assert sp_put.json()["start_temp"] == 23
-
-    # Savings logs CRUD
     created = client.post(
         "/api/v1/savings/logs",
         headers=headers,

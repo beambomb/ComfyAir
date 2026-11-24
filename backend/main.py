@@ -9,7 +9,7 @@ from app.core.config import settings
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    description="Backend API ComfyAir untuk Rekomendasi Suhu AC Dinamis, Kurva Tidur Biologis, dan Estimasi Hemat Listrik",
+    description="Backend API ComfyAir untuk Rekomendasi Suhu AC Adaptif Berbasis ML & Estimasi Hemat Listrik",
 )
 
 app.add_middleware(

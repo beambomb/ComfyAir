@@ -5,7 +5,7 @@ import { kwToPk } from "./ComfortProvider";
 
 export type ApiLink = "unknown" | "online" | "offline";
 
-const DEBOUNCE_MS = 220;
+const DEBOUNCE_MS = 180;
 
 export function useRecommendation(
   outdoorTemp: number,
@@ -13,9 +13,10 @@ export function useRecommendation(
   mode: Mode,
   acPowerKw: number = 0.8,
   token?: string | null,
+  feedbackVersion: number = 0,
 ) {
   const acPowerPk = kwToPk(acPowerKw);
-  const key = `${outdoorTemp}|${humidity}|${mode}|${acPowerPk}`;
+  const key = `${outdoorTemp}|${humidity}|${mode}|${acPowerPk}|${feedbackVersion}|${token ? "auth" : "guest"}`;
   const local = localRecommendation(outdoorTemp, mode, humidity);
   const [settled, setSettled] = useState<{ key: string; rec: Recommendation } | null>(null);
   const [link, setLink] = useState<ApiLink>("unknown");
@@ -47,6 +48,8 @@ export function useRecommendation(
               rawPredictedTemp: prediction.raw_predicted_temp,
               modelUsed: prediction.model_used,
               modelR2: prediction.model_r2,
+              personalBiasC: prediction.personal_bias_c,
+              feedbackCount: prediction.feedback_count,
             },
           });
           setLink("online");

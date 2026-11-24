@@ -19,17 +19,15 @@ import {
   type Mode,
 } from "@/lib/comfort";
 import { DEFAULT_CITY, findCity } from "@/lib/cities";
-import { DEFAULT_SLEEP_PROFILE, type SleepProfileConfig } from "@/lib/night";
 import {
   WS_TELEMETRY_URL,
   fetchBackendWeather,
   fetchHealth,
   fetchMe,
   fetchPreferences,
-  fetchSleepProfile,
   type UserProfile,
 } from "@/lib/api";
-import { fetchWeatherSnapshot, type HourlyPoint } from "@/lib/weather";
+import { fetchWeatherSnapshot } from "@/lib/weather";
 
 export const AUTH_STORAGE_KEY = "comfyair_auth";
 
@@ -41,7 +39,6 @@ export type WeatherState =
       temp: number;
       humidity: number;
       observedAt: string;
-      hourly: HourlyPoint[];
     }
   | { status: "sample" };
 
@@ -67,9 +64,9 @@ export type ComfortState = {
   city: string;
   weather: WeatherState;
   controls: Controls;
-  sleepProfile: SleepProfileConfig;
   auth: AuthState;
   wsConnected: boolean;
+  feedbackVersion: number;
 };
 
 export type ComfortAction =
@@ -81,7 +78,6 @@ export type ComfortAction =
       temp: number;
       humidity: number;
       observedAt: string;
-      hourly: HourlyPoint[];
     }
   | { type: "weather/sample" }
   | { type: "weather/reset" }
@@ -92,10 +88,10 @@ export type ComfortAction =
   | { type: "acPower/set"; value: number }
   | { type: "tariff/set"; value: number }
   | { type: "hours/set"; value: number }
-  | { type: "sleepProfile/set"; patch: Partial<SleepProfileConfig> }
   | { type: "auth/login"; user: UserProfile; accessToken: string; refreshToken: string }
   | { type: "auth/logout" }
-  | { type: "ws/set"; connected: boolean };
+  | { type: "ws/set"; connected: boolean }
+  | { type: "feedback/bump" };
 
 const initialState: ComfortState = {
   city: DEFAULT_CITY,
@@ -110,7 +106,6 @@ const initialState: ComfortState = {
     hoursPerNight: ENERGY.hoursPerNight,
     touched: false,
   },
-  sleepProfile: DEFAULT_SLEEP_PROFILE,
   auth: {
     status: "guest",
     user: null,
@@ -118,6 +113,7 @@ const initialState: ComfortState = {
     refreshToken: null,
   },
   wsConnected: false,
+  feedbackVersion: 0,
 };
 
 function clampTo(value: number, bounds: { min: number; max: number }): number {
@@ -153,7 +149,6 @@ function reducer(state: ComfortState, action: ComfortAction): ComfortState {
         temp: action.temp,
         humidity: action.humidity,
         observedAt: action.observedAt,
-        hourly: action.hourly,
       };
       if (controls.touched) return { ...state, weather };
       return {
@@ -217,8 +212,6 @@ function reducer(state: ComfortState, action: ComfortAction): ComfortState {
       return { ...state, controls: { ...controls, tariffPerKwh: action.value } };
     case "hours/set":
       return { ...state, controls: { ...controls, hoursPerNight: action.value } };
-    case "sleepProfile/set":
-      return { ...state, sleepProfile: { ...state.sleepProfile, ...action.patch } };
     case "auth/login":
       return {
         ...state,
@@ -228,6 +221,7 @@ function reducer(state: ComfortState, action: ComfortAction): ComfortState {
           accessToken: action.accessToken,
           refreshToken: action.refreshToken,
         },
+        feedbackVersion: state.feedbackVersion + 1,
       };
     case "auth/logout":
       return {
@@ -238,9 +232,12 @@ function reducer(state: ComfortState, action: ComfortAction): ComfortState {
           accessToken: null,
           refreshToken: null,
         },
+        feedbackVersion: state.feedbackVersion + 1,
       };
     case "ws/set":
       return { ...state, wsConnected: action.connected };
+    case "feedback/bump":
+      return { ...state, feedbackVersion: state.feedbackVersion + 1 };
   }
 }
 
@@ -250,7 +247,6 @@ const DispatchContext = createContext<Dispatch<ComfortAction> | null>(null);
 export function ComfortProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  // Fetch weather whenever active city changes (backend cache first, direct Open-Meteo fallback).
   useEffect(() => {
     const controller = new AbortController();
     const cityInfo = findCity(state.city);
@@ -264,7 +260,6 @@ export function ComfortProvider({ children }: { children: ReactNode }) {
           temp: res.temp,
           humidity: res.humidity,
           observedAt: res.observed_at,
-          hourly: res.hourly,
         });
       })
       .catch(() => {
@@ -278,7 +273,6 @@ export function ComfortProvider({ children }: { children: ReactNode }) {
               temp: snap.temp,
               humidity: snap.humidity,
               observedAt: snap.observedAt,
-              hourly: snap.hourly,
             });
           })
           .catch(() => {
@@ -289,7 +283,6 @@ export function ComfortProvider({ children }: { children: ReactNode }) {
     return () => controller.abort();
   }, [state.city]);
 
-  // Restore saved session from localStorage and hydrate backend preferences / sleep profile.
   useEffect(() => {
     let active = true;
     try {
@@ -304,42 +297,23 @@ export function ComfortProvider({ children }: { children: ReactNode }) {
         .then(async (user) => {
           if (!active) return;
           dispatch({ type: "auth/login", user, accessToken: access, refreshToken: refresh });
-          const [pref, sp] = await Promise.all([
-            fetchPreferences(access).catch(() => null),
-            fetchSleepProfile(access).catch(() => null),
-          ]);
-          if (!active) return;
-          if (pref) {
-            dispatch({ type: "acPower/set", value: pkToKw(pref.ac_power_pk) });
-            dispatch({ type: "tariff/set", value: pref.electricity_rate_per_kwh });
-            if (pref.preferred_city) dispatch({ type: "city/set", city: pref.preferred_city });
-          }
-          if (sp) {
-            dispatch({
-              type: "sleepProfile/set",
-              patch: {
-                bedtime: sp.bedtime.slice(0, 5),
-                wakeTime: sp.wake_time.slice(0, 5),
-                startTemp: sp.start_temp,
-                deepSleepTemp: sp.deep_sleep_temp,
-                wakeTemp: sp.wake_temp,
-                isActive: sp.is_active,
-              },
-            });
-          }
+          const pref = await fetchPreferences(access).catch(() => null);
+          if (!active || !pref) return;
+          dispatch({ type: "acPower/set", value: pkToKw(pref.ac_power_pk) });
+          dispatch({ type: "tariff/set", value: pref.electricity_rate_per_kwh });
+          if (pref.preferred_city) dispatch({ type: "city/set", city: pref.preferred_city });
         })
         .catch(() => {
           window.localStorage.removeItem(AUTH_STORAGE_KEY);
         });
     } catch {
-      // Ignore malformed localStorage entries.
+      // Ignore malformed storage data.
     }
     return () => {
       active = false;
     };
   }, []);
 
-  // Connect WebSocket telemetry only when backend health endpoint is reachable.
   useEffect(() => {
     let socket: WebSocket | null = null;
     const controller = new AbortController();

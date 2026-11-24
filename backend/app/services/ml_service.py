@@ -1,4 +1,4 @@
-"""ML inference service loading trained scikit-learn pipeline and metadata."""
+"""ML inference service with trained scikit-learn model and adaptive user calibration."""
 
 from __future__ import annotations
 
@@ -80,6 +80,12 @@ class MLService:
         model_used = self.metadata.get("model_name", "GradientBoostingRegressor")
         model_r2 = self.metadata.get("test_r2")
 
+        target_user = user_id or req.user_id
+        try:
+            personal_bias_c, feedback_count = get_storage().get_comfort_bias(target_user)
+        except Exception:
+            personal_bias_c, feedback_count = (0.0, 0)
+
         if self.model is not None:
             try:
                 features = build_feature_vector(
@@ -92,25 +98,26 @@ class MLService:
                 raw_pred = float(
                     self.model.predict(np.asarray([features], dtype=np.float64))[0]
                 )
-                setpoint = int(max(22, min(27, round(raw_pred))))
             except Exception:
-                setpoint = adaptive_fallback_setpoint(
-                    req.outdoor_temp, req.humidity, req.mode
+                raw_pred = float(
+                    adaptive_fallback_setpoint(req.outdoor_temp, req.humidity, req.mode)
                 )
-                raw_pred = float(setpoint)
                 model_used = "ASHRAE 55 Fallback"
                 model_r2 = None
         else:
-            setpoint = adaptive_fallback_setpoint(req.outdoor_temp, req.humidity, req.mode)
-            raw_pred = float(setpoint)
+            raw_pred = float(
+                adaptive_fallback_setpoint(req.outdoor_temp, req.humidity, req.mode)
+            )
             model_used = "ASHRAE 55 Fallback"
             model_r2 = None
 
+        calibrated_pred = raw_pred + personal_bias_c
+        setpoint = int(max(22, min(27, round(calibrated_pred))))
         savings = max(0.0, (setpoint - 20) * 6.5)
 
         try:
             get_storage().log_recommendation(
-                user_id=user_id or req.user_id,
+                user_id=target_user,
                 recommended_setpoint=setpoint,
                 mode=req.mode,
             )
@@ -119,13 +126,15 @@ class MLService:
 
         return PredictionResponse(
             recommended_setpoint=setpoint,
-            raw_predicted_temp=round(raw_pred, 2),
+            raw_predicted_temp=round(calibrated_pred, 2),
             heat_index_c=heat_index,
             mode=req.mode,
             comfort_description=MODE_DESCRIPTIONS.get(req.mode, "Mode normal"),
             estimated_savings_percent=round(savings, 1),
             model_used=model_used,
             model_r2=model_r2,
+            personal_bias_c=personal_bias_c,
+            feedback_count=feedback_count,
         )
 
 

@@ -1,26 +1,84 @@
 "use client";
 
+import { useState } from "react";
+import {
+  resetComfortFeedback,
+  submitComfortFeedback,
+  type ComfortRating,
+} from "@/lib/api";
 import { CITIES } from "@/lib/cities";
 import { HUMIDITY, MODE_LABEL, MODES, OUTDOOR } from "@/lib/comfort";
 import { useComfortDispatch, useComfortState } from "./ComfortProvider";
 import { useRecommendation } from "./useRecommendation";
 import styles from "./Dashboard.module.css";
 
+const FEEDBACK_OPTIONS: readonly { rating: ComfortRating; label: string }[] = [
+  { rating: "too_cold", label: "Terlalu dingin" },
+  { rating: "just_right", label: "Pas" },
+  { rating: "too_warm", label: "Terlalu panas" },
+];
+
 export default function Dashboard() {
-  const { city, weather, controls, auth } = useComfortState();
+  const { city, weather, controls, auth, feedbackVersion } = useComfortState();
   const dispatch = useComfortDispatch();
-  const { rec } = useRecommendation(
+  const { rec, link } = useRecommendation(
     controls.outdoorTemp,
     controls.humidity,
     controls.mode,
     controls.acPowerKw,
     auth.accessToken,
+    feedbackVersion,
   );
+
+  const [fbBusy, setFbBusy] = useState(false);
+  const [fbNote, setFbNote] = useState<string | null>(null);
 
   const atMinTemp = controls.outdoorTemp <= OUTDOOR.min;
   const atMaxTemp = controls.outdoorTemp >= OUTDOOR.max;
   const atMinHum = controls.humidity <= HUMIDITY.min;
   const atMaxHum = controls.humidity >= HUMIDITY.max;
+
+  const biasSuffix =
+    rec.personalBiasC !== 0
+      ? `, kalibrasi ${rec.personalBiasC > 0 ? "+" : ""}${rec.personalBiasC}°C`
+      : "";
+
+  async function handleFeedback(rating: ComfortRating) {
+    setFbBusy(true);
+    setFbNote(null);
+    try {
+      await submitComfortFeedback(
+        {
+          outdoor_temp: controls.outdoorTemp,
+          humidity: controls.humidity,
+          mode: controls.mode,
+          predicted_setpoint: rec.setpoint,
+          rating,
+        },
+        auth.accessToken,
+      );
+      dispatch({ type: "feedback/bump" });
+      setFbNote("Preferensi dicatat");
+    } catch {
+      setFbNote("Perlu koneksi API untuk kalibrasi");
+    } finally {
+      setFbBusy(false);
+    }
+  }
+
+  async function handleResetCalibration() {
+    setFbBusy(true);
+    setFbNote(null);
+    try {
+      await resetComfortFeedback(auth.accessToken);
+      dispatch({ type: "feedback/bump" });
+      setFbNote("Kalibrasi direset");
+    } catch {
+      setFbNote("Gagal mereset kalibrasi");
+    } finally {
+      setFbBusy(false);
+    }
+  }
 
   return (
     <main id="main-content" className={styles.main}>
@@ -77,9 +135,43 @@ export default function Dashboard() {
 
             <p className={styles.modelNote}>
               {controls.power
-                ? `Indeks panas ${rec.heatIndexC}°C, ${rec.modelUsed}`
+                ? `Indeks panas ${rec.heatIndexC}°C, ${rec.modelUsed}${biasSuffix}`
                 : "AC dalam keadaan mati"}
             </p>
+
+            {controls.power && link !== "offline" ? (
+              <div className={styles.feedbackSection}>
+                <div className={styles.feedbackHeader}>
+                  <span className={styles.feedbackLabel}>Bagaimana suhu ini?</span>
+                  {rec.feedbackCount > 0 ? (
+                    <button
+                      type="button"
+                      className={styles.resetButton}
+                      disabled={fbBusy}
+                      onClick={handleResetCalibration}
+                    >
+                      Reset kalibrasi
+                    </button>
+                  ) : null}
+                </div>
+
+                <div className={styles.feedbackRow}>
+                  {FEEDBACK_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.rating}
+                      type="button"
+                      className={styles.feedbackBtn}
+                      disabled={fbBusy}
+                      onClick={() => handleFeedback(opt.rating)}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                {fbNote ? <p className={styles.feedbackNote}>{fbNote}</p> : null}
+              </div>
+            ) : null}
 
             <p className="visually-hidden" aria-live="polite" aria-atomic="true">
               {controls.power

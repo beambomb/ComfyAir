@@ -9,7 +9,6 @@ import styles from "./Header.module.css";
 
 const NAV_ITEMS = [
   { href: "/", label: "Dasbor" },
-  { href: "/grafik", label: "Grafik" },
   { href: "/penghematan", label: "Penghematan" },
   { href: "/akun", label: "Akun" },
 ] as const;

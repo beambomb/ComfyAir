@@ -1,6 +1,5 @@
 import type { Mode, PeriodId } from "./comfort";
 import { fetchJson } from "./http";
-import type { HourlyPoint } from "./weather";
 
 export const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(
   /\/+$/,
@@ -24,6 +23,27 @@ export type Prediction = {
   estimated_savings_percent: number;
   model_used: string;
   model_r2: number | null;
+  personal_bias_c: number;
+  feedback_count: number;
+};
+
+export type ComfortRating = "too_cold" | "just_right" | "too_warm";
+
+export type ComfortFeedbackRecord = {
+  feedback_id: string;
+  outdoor_temp: number;
+  humidity: number;
+  mode: string;
+  predicted_setpoint: number;
+  rating: string;
+  delta_c: number;
+  created_at: string;
+};
+
+export type ComfortFeedbackSummary = {
+  personal_bias_c: number;
+  feedback_count: number;
+  recent: ComfortFeedbackRecord[];
 };
 
 export type ModelBenchmark = {
@@ -93,17 +113,6 @@ export type PreferencesPayload = {
   updated_at?: string | null;
 };
 
-export type SleepProfilePayload = {
-  sleep_profile_id?: string;
-  profile_name?: string;
-  bedtime: string;
-  wake_time: string;
-  start_temp: number;
-  deep_sleep_temp: number;
-  wake_temp: number;
-  is_active: boolean;
-};
-
 export type SavingsLogItem = {
   log_id: string;
   log_date: string;
@@ -118,7 +127,6 @@ export type BackendWeatherResponse = {
   temp: number;
   humidity: number;
   observed_at: string;
-  hourly: HourlyPoint[];
   source: string;
   upstream_latency_ms: number | null;
 };
@@ -160,6 +168,8 @@ export async function fetchPrediction(
     estimated_savings_percent: d.estimated_savings_percent,
     model_used: typeof d.model_used === "string" ? d.model_used : "GradientBoostingRegressor",
     model_r2: typeof d.model_r2 === "number" ? d.model_r2 : null,
+    personal_bias_c: typeof d.personal_bias_c === "number" ? d.personal_bias_c : 0,
+    feedback_count: typeof d.feedback_count === "number" ? d.feedback_count : 0,
   };
 }
 
@@ -207,6 +217,40 @@ async function apiRequest<T>(path: string, init: RequestInit): Promise<T> {
   } finally {
     clearTimeout(timer);
   }
+}
+
+export function submitComfortFeedback(
+  payload: {
+    outdoor_temp: number;
+    humidity: number;
+    mode: Mode;
+    predicted_setpoint: number;
+    rating: ComfortRating;
+  },
+  token?: string | null,
+): Promise<{ status: string; rating: ComfortRating; personal_bias_c: number; feedback_count: number }> {
+  return apiRequest("/api/v1/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeader(token) },
+    body: JSON.stringify(payload),
+  });
+}
+
+export function fetchComfortFeedback(
+  token?: string | null,
+): Promise<ComfortFeedbackSummary> {
+  return apiRequest("/api/v1/feedback", {
+    headers: authHeader(token),
+  });
+}
+
+export function resetComfortFeedback(
+  token?: string | null,
+): Promise<{ status: string; personal_bias_c: number; feedback_count: number }> {
+  return apiRequest("/api/v1/feedback", {
+    method: "DELETE",
+    headers: authHeader(token),
+  });
 }
 
 export function loginUser(email: string, password: string): Promise<AuthTokensResponse> {
@@ -260,23 +304,6 @@ export function savePreferences(
   });
 }
 
-export function fetchSleepProfile(token: string): Promise<SleepProfilePayload> {
-  return apiRequest<SleepProfilePayload>("/api/v1/sleep-profiles", {
-    headers: authHeader(token),
-  });
-}
-
-export function saveSleepProfile(
-  token: string,
-  payload: Partial<SleepProfilePayload>,
-): Promise<SleepProfilePayload> {
-  return apiRequest<SleepProfilePayload>("/api/v1/sleep-profiles", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", ...authHeader(token) },
-    body: JSON.stringify(payload),
-  });
-}
-
 export function fetchSavingsLogs(
   token: string,
   period?: PeriodId,
@@ -308,19 +335,5 @@ export function deleteSavingsLog(token: string, logId: string): Promise<void> {
   return apiRequest(`/api/v1/savings/logs/${encodeURIComponent(logId)}`, {
     method: "DELETE",
     headers: authHeader(token),
-  });
-}
-
-export function triggerSleepCurve(payload: {
-  bedtime: string;
-  wake_time: string;
-  start_temp: number;
-  deep_sleep_temp: number;
-  wake_temp: number;
-}): Promise<unknown> {
-  return apiRequest("/api/v1/sleep-curve", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
   });
 }

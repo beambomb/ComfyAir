@@ -16,19 +16,19 @@
 
 * **Nama Produk:** ComfyAir
 * **Jenis Produk:** Web Application (Cloud & Machine Learning Based)
-* **Latar Belakang & Permasalahan:** Penggunaan AC yang kurang optimal sering kali menyebabkan pemborosan energi listrik serta ketidaknyamanan temperatur saat tidur akibat perubahan suhu lingkungan luar yang dinamis sepanjang malam.
-* **Ide Solusi:** Solusi web cerdas berbasis cloud computing dan machine learning yang mengintegrasikan data cuaca luar guna menghitung rekomendasi suhu setpoint AC dinamis, mengoptimalkan kurva temperatur tidur biologis, dan menyajikan estimasi penghematan biaya listrik, praktis, dan tanpa memerlukan perangkat keras tambahan.
+* **Latar Belakang & Permasalahan:** Penggunaan AC yang kurang optimal sering kali menyebabkan pemborosan energi listrik serta ketidaknyamanan temperatur akibat perubahan suhu dan kelembapan lingkungan luar yang dinamis.
+* **Ide Solusi:** Solusi web cerdas berbasis cloud computing dan machine learning yang mengintegrasikan data cuaca luar guna menghitung rekomendasi suhu setpoint AC dinamis, mengkalibrasi prediksi berdasarkan umpan balik kenyamanan pengguna, dan menyajikan estimasi penghematan biaya listrik, praktis, dan tanpa memerlukan perangkat keras tambahan.
 * **Analisis Kompetitor:** Berbeda dengan termostat pintar konvensional (seperti Nest atau ecobee) yang membutuhkan instalasi perangkat keras mahal, ComfyAir hadir sebagai solusi berbasis perangkat lunak murni (SaaS) yang mengandalkan integrasi data cuaca real-time dan model ML untuk memberikan rekomendasi suhu efisien tanpa biaya investasi alat tambahan.
 
 ### Perancangan Tahap 1-3 SDLC
 
 a. **Tujuan dari produk**
-   > Menghitung rekomendasi suhu setpoint AC dinamis, mengoptimalkan kurva temperatur tidur biologis, dan menyajikan estimasi penghematan biaya listrik, praktis, dan tanpa memerlukan perangkat keras tambahan.
+   > Menghitung rekomendasi suhu setpoint AC dinamis menggunakan machine learning, menyesuaikan prediksi melalui kalibrasi umpan balik kenyamanan pengguna, dan menyajikan estimasi penghematan biaya listrik secara praktis tanpa memerlukan perangkat keras tambahan.
 
 b. **Pengguna potensial dari produk dan kebutuhan para pengguna tersebut**
-   > Penggunanya adalah orang-orang yang memiliki AC dan tinggal di daerah yang suhunya berubah secara drastis saat malam.
+   > Penggunanya adalah orang-orang yang memiliki AC dan tinggal di daerah tropis dengan perubahan suhu serta kelembapan yang dinamis.
    > 
-   > Kebutuhannya adalah menjaga kenyamanan pengguna saat menggunakan AC dengan mengoptimalkan suhu setpoint AC sehingga meminimalisir gangguan tidur akibat suhu AC yang terlalu dingin.
+   > Kebutuhannya adalah menjaga kenyamanan pengguna saat menggunakan AC dengan mengoptimalkan suhu setpoint AC sehingga meminimalisir pemborosan listrik maupun rasa terlalu dingin.
    
 c. **Use Case Diagram**
 
@@ -43,7 +43,7 @@ d. **Functional requirements untuk use case yang telah dirancang**
 | **FR 3** | Sistem dapat menampilkan ringkasan status dan kontrol utama AC. |
 | **FR 4** | Sistem dapat menampilkan *dashboard* interaktif yang memuat informasi cuaca *real-time*. |
 | **FR 5** | Sistem dapat menampilkan hasil rekomendasi suhu otomatis menggunakan model Machine Learning. |
-| **FR 6** | Sistem dapat mengonfigurasi dan mengaktifkan mode kurva temperatur tidur |
+| **FR 6** | Sistem dapat merekam umpan balik kenyamanan pengguna untuk mengkalibrasi prediksi suhu Machine Learning secara adaptif. |
 | **FR 7** | Sistem dapat menghitung rekomendasi suhu optimal menggunakan model Machine Learning |
 | **FR 8** | Sistem dapat menyajikan filter periode waktu (harian, mingguan, bulanan) untuk menampilkan akumulasi penghematan biaya. |
 | **FR 9** | Sistem dapat mengalkulasi dan menyajikan estimasi penghematan konsumsi listrik serta biaya. |

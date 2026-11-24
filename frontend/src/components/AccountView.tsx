@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import {
+  fetchComfortFeedback,
   fetchHealth,
   fetchModelInfo,
   fetchPreferences,
-  fetchSleepProfile,
   loginUser,
   logoutUser,
   registerUser,
+  type ComfortFeedbackSummary,
   type HealthInfo,
   type ModelInfo,
 } from "@/lib/api";
@@ -23,7 +24,7 @@ import {
 import styles from "./AccountView.module.css";
 
 export default function AccountView() {
-  const { city, controls, auth, wsConnected } = useComfortState();
+  const { city, controls, auth, wsConnected, feedbackVersion } = useComfortState();
   const dispatch = useComfortDispatch();
 
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -35,6 +36,7 @@ export default function AccountView() {
 
   const [health, setHealth] = useState<HealthInfo | null>(null);
   const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
+  const [feedback, setFeedback] = useState<ComfortFeedbackSummary | null>(null);
   const [backendOffline, setBackendOffline] = useState(false);
 
   useEffect(() => {
@@ -59,34 +61,36 @@ export default function AccountView() {
     return () => controller.abort();
   }, []);
 
-  async function completeLogin(accessToken: string, refreshToken: string, user: NonNullable<typeof auth.user>) {
+  useEffect(() => {
+    let active = true;
+    fetchComfortFeedback(auth.accessToken)
+      .then((fb) => {
+        if (active) setFeedback(fb);
+      })
+      .catch(() => {
+        if (active) setFeedback(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [auth.accessToken, feedbackVersion]);
+
+  async function completeLogin(
+    accessToken: string,
+    refreshToken: string,
+    user: NonNullable<typeof auth.user>,
+  ) {
     window.localStorage.setItem(
       AUTH_STORAGE_KEY,
       JSON.stringify({ accessToken, refreshToken }),
     );
     dispatch({ type: "auth/login", user, accessToken, refreshToken });
 
-    const [pref, sp] = await Promise.all([
-      fetchPreferences(accessToken).catch(() => null),
-      fetchSleepProfile(accessToken).catch(() => null),
-    ]);
+    const pref = await fetchPreferences(accessToken).catch(() => null);
     if (pref) {
       dispatch({ type: "acPower/set", value: pkToKw(pref.ac_power_pk) });
       dispatch({ type: "tariff/set", value: pref.electricity_rate_per_kwh });
       if (pref.preferred_city) dispatch({ type: "city/set", city: pref.preferred_city });
-    }
-    if (sp) {
-      dispatch({
-        type: "sleepProfile/set",
-        patch: {
-          bedtime: sp.bedtime.slice(0, 5),
-          wakeTime: sp.wake_time.slice(0, 5),
-          startTemp: sp.start_temp,
-          deepSleepTemp: sp.deep_sleep_temp,
-          wakeTemp: sp.wake_temp,
-          isActive: sp.is_active,
-        },
-      });
     }
   }
 
@@ -131,10 +135,14 @@ export default function AccountView() {
     dispatch({ type: "auth/logout" });
   }
 
+  const calibrationText =
+    feedback && feedback.feedback_count > 0
+      ? `${feedback.personal_bias_c > 0 ? "+" : ""}${feedback.personal_bias_c}°C (${feedback.feedback_count} respon)`
+      : "Default";
+
   return (
     <main id="main-content" className={styles.main}>
       <div className="container">
-        {/* Section 1: Akun */}
         <section aria-labelledby="account-heading" className={styles.accountSection}>
           <div className={styles.sectionHeader}>
             <h1 id="account-heading" className={styles.heading}>
@@ -274,7 +282,6 @@ export default function AccountView() {
           )}
         </section>
 
-        {/* Section 2: Informasi Sistem */}
         <section aria-labelledby="system-heading" className={styles.systemSection}>
           <h2 id="system-heading" className={styles.subheading}>
             Informasi Sistem
@@ -335,8 +342,8 @@ export default function AccountView() {
                   </dd>
                 </div>
                 <div className={styles.kvRow}>
-                  <dt>Dataset</dt>
-                  <dd>{modelInfo ? `${modelInfo.dataset_size} sampel` : "-"}</dd>
+                  <dt>Kalibrasi</dt>
+                  <dd>{calibrationText}</dd>
                 </div>
                 <div className={styles.kvRow}>
                   <dt>Evaluasi</dt>

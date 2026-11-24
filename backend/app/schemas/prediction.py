@@ -21,4 +21,31 @@ class PredictionResponse(BaseModel):
     estimated_savings_percent: float = Field(..., examples=[32.5])
     model_used: str = Field(..., examples=["GradientBoostingRegressor"])
     model_r2: Optional[float] = Field(None, examples=[0.974])
+    personal_bias_c: float = Field(0.0, description="Kalibrasi preferensi suhu personal (°C)")
+    feedback_count: int = Field(0, description="Jumlah umpan balik yang digunakan")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class ComfortFeedbackRequest(BaseModel):
+    outdoor_temp: float = Field(..., examples=[30.0])
+    humidity: float = Field(..., ge=0, le=100, examples=[75.0])
+    mode: Literal["ECO", "SLEEP", "COMFORT"] = Field("SLEEP")
+    predicted_setpoint: int = Field(..., ge=16, le=32, examples=[26])
+    rating: Literal["too_cold", "just_right", "too_warm"]
+
+
+class ComfortFeedbackRecord(BaseModel):
+    feedback_id: str
+    outdoor_temp: float
+    humidity: float
+    mode: str
+    predicted_setpoint: int
+    rating: str
+    delta_c: float
+    created_at: str
+
+
+class ComfortFeedbackSummary(BaseModel):
+    personal_bias_c: float
+    feedback_count: int
+    recent: list[ComfortFeedbackRecord]

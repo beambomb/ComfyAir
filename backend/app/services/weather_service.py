@@ -26,8 +26,6 @@ CITIES: list[dict[str, Any]] = [
 
 _CITY_MAP = {c["name"].lower(): c for c in CITIES}
 
-_SAMPLE_PATTERN = [27.2, 26.7, 26.1, 25.6, 25.2, 24.8, 24.5, 24.2, 24.0, 24.1, 24.8]
-
 
 class WeatherService:
     def __init__(self) -> None:
@@ -46,13 +44,6 @@ class WeatherService:
     @staticmethod
     def _sample_snapshot(city: dict[str, Any]) -> dict[str, Any]:
         now_wib = datetime.now(WIB)
-        base_date = now_wib.date() if now_wib.hour >= 12 else (now_wib - timedelta(days=1)).date()
-        hourly: list[dict[str, Any]] = []
-        for idx, temp in enumerate(_SAMPLE_PATTERN):
-            dt = datetime(base_date.year, base_date.month, base_date.day, 21, 0, tzinfo=WIB) + timedelta(
-                hours=idx
-            )
-            hourly.append({"time": dt.strftime("%Y-%m-%dT%H:%M"), "temp": temp})
         return {
             "city": city["name"],
             "latitude": city["latitude"],
@@ -61,7 +52,6 @@ class WeatherService:
             "temp": 30.0,
             "humidity": 75.0,
             "observed_at": now_wib.strftime("%H.%M"),
-            "hourly": hourly,
             "source": "sample",
             "upstream_latency_ms": None,
         }
@@ -80,9 +70,7 @@ class WeatherService:
         url = (
             "https://api.open-meteo.com/v1/forecast"
             f"?latitude={city['latitude']}&longitude={city['longitude']}"
-            "&current=temperature_2m,relative_humidity_2m"
-            "&hourly=temperature_2m"
-            "&past_days=1&forecast_days=2&timezone=Asia%2FJakarta"
+            "&current=temperature_2m,relative_humidity_2m&timezone=Asia%2FJakarta"
         )
         start = time.perf_counter()
         try:
@@ -97,17 +85,6 @@ class WeatherService:
             humidity = float(current["relative_humidity_2m"])
             observed_at = str(current["time"])[11:16].replace(":", ".")
 
-            hourly_block = data["hourly"]
-            times = hourly_block["time"]
-            temps = hourly_block["temperature_2m"]
-            hourly = [
-                {"time": str(t), "temp": float(v)}
-                for t, v in zip(times, temps)
-                if isinstance(t, str) and len(t) >= 16 and isinstance(v, (int, float))
-            ]
-            if not hourly:
-                raise ValueError("Empty hourly series")
-
             snapshot = {
                 "city": city["name"],
                 "latitude": city["latitude"],
@@ -116,7 +93,6 @@ class WeatherService:
                 "temp": temp,
                 "humidity": humidity,
                 "observed_at": observed_at,
-                "hourly": hourly,
                 "source": "open-meteo",
                 "upstream_latency_ms": latency_ms,
             }

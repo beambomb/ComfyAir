@@ -152,6 +152,61 @@
   color: var(--text-secondary);
 }
 
+.feedbackSection {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--rule);
+}
+
+.feedbackHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.feedbackLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.feedbackRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.feedbackBtn {
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius);
+  background-color: var(--surface-muted);
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.feedbackBtn:hover:not(:disabled) {
+  background-color: var(--surface-hover);
+}
+
+.feedbackBtn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.feedbackNote {
+  margin-top: 8px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--accent);
+}
+
 .weatherHeader {
   display: flex;
   align-items: center;
@@ -174,7 +229,7 @@
 .resetButton {
   min-height: 44px;
   padding: 0 4px;
-  margin-block: -6px;
+  margin-block: -10px;
   border: 0;
   background: transparent;
   font-size: 0.875rem;

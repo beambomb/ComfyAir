@@ -2,7 +2,7 @@ name: Test and Build ComfyAir
 
 on:
   push:
-    branches: [ main, comfyair-simple, comfyair-optimized ]
+    branches: [ main, comfyair-simple, comfyair-optimized, comfyair-rework, comfyair-rework-nograph ]
   pull_request:
     branches: [ main ]
 

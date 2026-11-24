@@ -24,7 +24,7 @@ import { useRecommendation } from "./useRecommendation";
 import styles from "./SavingsView.module.css";
 
 export default function SavingsView() {
-  const { city, controls, auth } = useComfortState();
+  const { city, controls, auth, feedbackVersion } = useComfortState();
   const dispatch = useComfortDispatch();
   const { rec } = useRecommendation(
     controls.outdoorTemp,
@@ -32,6 +32,7 @@ export default function SavingsView() {
     controls.mode,
     controls.acPowerKw,
     auth.accessToken,
+    feedbackVersion,
   );
 
   const [period, setPeriod] = useState<PeriodId>("monthly");

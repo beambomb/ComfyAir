@@ -1,4 +1,4 @@
--- ComfyAir Database Schema 
+-- ComfyAir Database Schema
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -6,7 +6,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- 1. TABEL ROLES
 CREATE TABLE IF NOT EXISTS roles (
     role_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name VARCHAR(50) NOT NULL UNIQUE, 
+    name VARCHAR(50) NOT NULL UNIQUE,
     description TEXT
 );
 
@@ -46,24 +46,24 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
 CREATE TABLE IF NOT EXISTS user_preferences (
     preference_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
-    ac_power_pk FLOAT NOT NULL DEFAULT 1.0, 
-    electricity_rate_per_kwh DECIMAL(10, 2) NOT NULL DEFAULT 1444.70, 
+    ac_power_pk FLOAT NOT NULL DEFAULT 1.0,
+    electricity_rate_per_kwh DECIMAL(10, 2) NOT NULL DEFAULT 1444.70,
     default_temperature INT NOT NULL DEFAULT 24,
     preferred_city VARCHAR(100) DEFAULT 'Yogyakarta',
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 6. TABEL SLEEP_PROFILES
-CREATE TABLE IF NOT EXISTS sleep_profiles (
-    sleep_profile_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    profile_name VARCHAR(100) NOT NULL DEFAULT 'Weekday Sleep',
-    bedtime TIME NOT NULL DEFAULT '22:00:00',
-    wake_time TIME NOT NULL DEFAULT '06:00:00',
-    start_temp INT NOT NULL DEFAULT 24,
-    deep_sleep_temp INT NOT NULL DEFAULT 26,
-    wake_temp INT NOT NULL DEFAULT 25,
-    is_active BOOLEAN DEFAULT TRUE
+-- 6. TABEL COMFORT_FEEDBACK (Kalibrasi Adaptif ML per Pengguna)
+CREATE TABLE IF NOT EXISTS comfort_feedback (
+    feedback_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
+    outdoor_temp FLOAT NOT NULL,
+    humidity FLOAT NOT NULL,
+    mode VARCHAR(20) NOT NULL CHECK (mode IN ('ECO', 'SLEEP', 'COMFORT')),
+    predicted_setpoint INT NOT NULL,
+    rating VARCHAR(20) NOT NULL CHECK (rating IN ('too_cold', 'just_right', 'too_warm')),
+    delta_c FLOAT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 7. TABEL WEATHER_DATA
@@ -98,13 +98,14 @@ CREATE TABLE IF NOT EXISTS energy_saving_logs (
 );
 
 -- Indexing untuk performa query
+CREATE INDEX IF NOT EXISTS idx_feedback_user ON comfort_feedback(user_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_weather_city ON weather_data(city_name, recorded_at);
 CREATE INDEX IF NOT EXISTS idx_temp_rec_user ON temperature_recommendations(user_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_energy_user_date ON energy_saving_logs(user_id, log_date);
 
 -- Seeding data dasar role
-INSERT INTO roles (name, description) 
-VALUES 
+INSERT INTO roles (name, description)
+VALUES
     ('admin', 'Administrator dengan akses penuh'),
     ('user', 'Pengguna standar ComfyAir')
 ON CONFLICT (name) DO NOTHING;

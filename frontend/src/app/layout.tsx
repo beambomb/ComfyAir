@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s",
   },
   description:
-    "Pengaturan suhu AC adaptif berdasarkan cuaca Yogyakarta dan estimasi penghematan listrik bulanan.",
+    "Pengaturan suhu AC adaptif berbasis machine learning dan estimasi penghematan listrik bulanan.",
 };
 
 export const viewport: Viewport = {

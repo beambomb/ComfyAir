@@ -4,7 +4,7 @@ import Dashboard from "@/components/Dashboard";
 export const metadata: Metadata = {
   title: "ComfyAir",
   description:
-    "Pengaturan suhu AC adaptif berdasarkan cuaca Yogyakarta dan estimasi penghematan listrik bulanan.",
+    "Dasbor ComfyAir untuk rekomendasi suhu AC berbasis machine learning dari cuaca real-time.",
 };
 
 export default function Home() {

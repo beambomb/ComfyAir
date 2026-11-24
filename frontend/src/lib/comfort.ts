@@ -90,6 +90,8 @@ export type Recommendation = {
   rawPredictedTemp?: number;
   modelUsed: string;
   modelR2?: number | null;
+  personalBiasC: number;
+  feedbackCount: number;
 };
 
 export function localRecommendation(
@@ -105,6 +107,8 @@ export function localRecommendation(
     heatIndexC: computeHeatIndexC(outdoorTemp, humidity),
     modelUsed: "ASHRAE 55 Lokal",
     modelR2: null,
+    personalBiasC: 0,
+    feedbackCount: 0,
   };
 }
 

@@ -60,16 +60,16 @@ CREATE TABLE IF NOT EXISTS user_preferences (
     updated_at TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS sleep_profiles (
-    sleep_profile_id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    profile_name TEXT NOT NULL DEFAULT 'Weekday Sleep',
-    bedtime TEXT NOT NULL DEFAULT '22:00:00',
-    wake_time TEXT NOT NULL DEFAULT '06:00:00',
-    start_temp INTEGER NOT NULL DEFAULT 24,
-    deep_sleep_temp INTEGER NOT NULL DEFAULT 26,
-    wake_temp INTEGER NOT NULL DEFAULT 25,
-    is_active INTEGER DEFAULT 1
+CREATE TABLE IF NOT EXISTS comfort_feedback (
+    feedback_id TEXT PRIMARY KEY,
+    user_id TEXT REFERENCES users(user_id) ON DELETE CASCADE,
+    outdoor_temp REAL NOT NULL,
+    humidity REAL NOT NULL,
+    mode TEXT NOT NULL CHECK (mode IN ('ECO', 'SLEEP', 'COMFORT')),
+    predicted_setpoint INTEGER NOT NULL,
+    rating TEXT NOT NULL CHECK (rating IN ('too_cold', 'just_right', 'too_warm')),
+    delta_c REAL NOT NULL,
+    created_at TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS weather_data (
@@ -99,6 +99,8 @@ CREATE TABLE IF NOT EXISTS energy_saving_logs (
     saved_cost_idr REAL NOT NULL,
     created_at TEXT NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_feedback_user ON comfort_feedback(user_id, created_at);
 """
 
 
@@ -195,15 +197,6 @@ class ComfyAirStorage:
             """,
             (str(uuid.uuid4()), user_id, now),
         )
-        conn.execute(
-            """
-            INSERT OR IGNORE INTO sleep_profiles (
-                sleep_profile_id, user_id, profile_name, bedtime, wake_time,
-                start_temp, deep_sleep_temp, wake_temp, is_active
-            ) VALUES (?, ?, 'Weekday Sleep', '22:00:00', '06:00:00', 24, 26, 25, 1)
-            """,
-            (str(uuid.uuid4()), user_id),
-        )
 
     def _attach_role(self, conn: sqlite3.Connection, row: sqlite3.Row | None) -> dict[str, Any] | None:
         if row is None:
@@ -296,18 +289,6 @@ class ComfyAirStorage:
                         "electricity_rate_per_kwh": 1444.70,
                         "default_temperature": 24,
                         "preferred_city": "Yogyakarta",
-                    }
-                ).execute()
-                self._supabase.table("sleep_profiles").insert(
-                    {
-                        "user_id": user_id,
-                        "profile_name": "Weekday Sleep",
-                        "bedtime": "22:00:00",
-                        "wake_time": "06:00:00",
-                        "start_temp": 24,
-                        "deep_sleep_temp": 26,
-                        "wake_temp": 25,
-                        "is_active": True,
                     }
                 ).execute()
                 if res.data:
@@ -523,84 +504,131 @@ class ComfyAirStorage:
             assert row is not None
             return dict(row)
 
-    def get_sleep_profile(self, user_id: str) -> dict[str, Any]:
-        if self._supabase is not None:
-            try:
-                res = (
-                    self._supabase.table("sleep_profiles")
-                    .select("*")
-                    .eq("user_id", user_id)
-                    .limit(1)
-                    .execute()
-                )
-                if res.data:
-                    return dict(res.data[0])
-            except Exception:
-                pass
-        with self._connect() as conn:
-            row = conn.execute(
-                "SELECT * FROM sleep_profiles WHERE user_id = ? LIMIT 1", (user_id,)
-            ).fetchone()
-            if row is None:
-                self._seed_user_defaults(conn, user_id, _now_iso())
-                row = conn.execute(
-                    "SELECT * FROM sleep_profiles WHERE user_id = ? LIMIT 1", (user_id,)
-                ).fetchone()
-            assert row is not None
-            data = dict(row)
-            data["is_active"] = bool(data.get("is_active", 1))
-            return data
-
-    def upsert_sleep_profile(self, user_id: str, data: dict[str, Any]) -> dict[str, Any]:
-        current = self.get_sleep_profile(user_id)
-        updated = {
-            "profile_name": str(data.get("profile_name", current["profile_name"])),
-            "bedtime": str(data.get("bedtime", current["bedtime"])),
-            "wake_time": str(data.get("wake_time", current["wake_time"])),
-            "start_temp": int(data.get("start_temp", current["start_temp"])),
-            "deep_sleep_temp": int(data.get("deep_sleep_temp", current["deep_sleep_temp"])),
-            "wake_temp": int(data.get("wake_temp", current["wake_temp"])),
-            "is_active": bool(data.get("is_active", current["is_active"])),
+    def create_comfort_feedback(
+        self,
+        user_id: str | None,
+        outdoor_temp: float,
+        humidity: float,
+        mode: str,
+        predicted_setpoint: int,
+        rating: str,
+        delta_c: float,
+    ) -> dict[str, Any]:
+        now = _now_iso()
+        feedback_id = str(uuid.uuid4())
+        payload = {
+            "feedback_id": feedback_id,
+            "user_id": user_id,
+            "outdoor_temp": float(outdoor_temp),
+            "humidity": float(humidity),
+            "mode": mode,
+            "predicted_setpoint": int(predicted_setpoint),
+            "rating": rating,
+            "delta_c": float(delta_c),
+            "created_at": now,
         }
         if self._supabase is not None:
             try:
-                res = (
-                    self._supabase.table("sleep_profiles")
-                    .update(updated)
-                    .eq("sleep_profile_id", current["sleep_profile_id"])
-                    .execute()
-                )
+                res = self._supabase.table("comfort_feedback").insert(payload).execute()
                 if res.data:
                     return dict(res.data[0])
             except Exception:
                 pass
+
         with self._connect() as conn:
+            valid_user_id = None
+            if user_id:
+                u = conn.execute(
+                    "SELECT user_id FROM users WHERE user_id = ?", (user_id,)
+                ).fetchone()
+                if u:
+                    valid_user_id = user_id
+            payload["user_id"] = valid_user_id
             conn.execute(
                 """
-                UPDATE sleep_profiles
-                SET profile_name = ?, bedtime = ?, wake_time = ?,
-                    start_temp = ?, deep_sleep_temp = ?, wake_temp = ?, is_active = ?
-                WHERE sleep_profile_id = ?
+                INSERT INTO comfort_feedback (
+                    feedback_id, user_id, outdoor_temp, humidity, mode,
+                    predicted_setpoint, rating, delta_c, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
-                    updated["profile_name"],
-                    updated["bedtime"],
-                    updated["wake_time"],
-                    updated["start_temp"],
-                    updated["deep_sleep_temp"],
-                    updated["wake_temp"],
-                    1 if updated["is_active"] else 0,
-                    current["sleep_profile_id"],
+                    feedback_id,
+                    valid_user_id,
+                    payload["outdoor_temp"],
+                    payload["humidity"],
+                    mode,
+                    payload["predicted_setpoint"],
+                    rating,
+                    payload["delta_c"],
+                    now,
                 ),
             )
-            row = conn.execute(
-                "SELECT * FROM sleep_profiles WHERE sleep_profile_id = ?",
-                (current["sleep_profile_id"],),
-            ).fetchone()
-            assert row is not None
-            res = dict(row)
-            res["is_active"] = bool(res.get("is_active", 1))
-            return res
+        return payload
+
+    def list_comfort_feedback(
+        self, user_id: str | None, limit: int = 10
+    ) -> list[dict[str, Any]]:
+        if self._supabase is not None:
+            try:
+                q = self._supabase.table("comfort_feedback").select("*")
+                if user_id:
+                    q = q.eq("user_id", user_id)
+                else:
+                    q = q.is_("user_id", "null")
+                res = q.order("created_at", desc=True).limit(limit).execute()
+                return [dict(r) for r in (res.data or [])]
+            except Exception:
+                pass
+
+        with self._connect() as conn:
+            if user_id:
+                rows = conn.execute(
+                    """
+                    SELECT * FROM comfort_feedback
+                    WHERE user_id = ?
+                    ORDER BY created_at DESC
+                    LIMIT ?
+                    """,
+                    (user_id, limit),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    """
+                    SELECT * FROM comfort_feedback
+                    WHERE user_id IS NULL
+                    ORDER BY created_at DESC
+                    LIMIT ?
+                    """,
+                    (limit,),
+                ).fetchall()
+            return [dict(r) for r in rows]
+
+    def get_comfort_bias(self, user_id: str | None) -> tuple[float, int]:
+        rows = self.list_comfort_feedback(user_id, limit=20)
+        count = len(rows)
+        if count == 0:
+            return (0.0, 0)
+        total = sum(float(r["delta_c"]) for r in rows)
+        raw_bias = (total / (count + 2.0)) * 1.5
+        bias = round(max(-2.0, min(2.0, raw_bias)), 2)
+        return (bias, count)
+
+    def reset_comfort_feedback(self, user_id: str | None) -> None:
+        if self._supabase is not None:
+            try:
+                q = self._supabase.table("comfort_feedback").delete()
+                if user_id:
+                    q = q.eq("user_id", user_id)
+                else:
+                    q = q.is_("user_id", "null")
+                q.execute()
+            except Exception:
+                pass
+        with self._connect() as conn:
+            if user_id:
+                conn.execute("DELETE FROM comfort_feedback WHERE user_id = ?", (user_id,))
+            else:
+                conn.execute("DELETE FROM comfort_feedback WHERE user_id IS NULL")
 
     def log_weather(
         self,
@@ -667,7 +695,6 @@ class ComfyAirStorage:
             except Exception:
                 pass
         with self._connect() as conn:
-            # Verify user_id exists before inserting if provided, avoiding FK failure on stale IDs.
             valid_user_id = None
             if user_id:
                 u = conn.execute(
