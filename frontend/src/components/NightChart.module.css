@@ -1,71 +1,139 @@
-.figure {
-  margin: 0;
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.chart {
+.chartFrame {
+  width: 100%;
+}
+
+.svg {
+  display: block;
   width: 100%;
   height: auto;
   overflow: visible;
 }
 
-.grid {
-  stroke: var(--rule);
+.compact {
+  display: none;
+}
+
+.gridLine {
+  stroke: #e5e7eb;
   stroke-width: 1;
 }
 
-.axis {
-  stroke: var(--ink);
+.axisLine {
+  stroke: var(--rule-strong);
   stroke-width: 1;
 }
 
 .tick {
-  font-family: var(--face-mono);
-  font-size: 13px;
-  fill: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  fill: var(--text-secondary);
 }
 
-.outdoor {
+.outdoorLine {
   fill: none;
-  stroke: var(--ink-2);
+  stroke: #737373;
   stroke-width: 2;
-  stroke-dasharray: 2 5;
+  stroke-dasharray: 4 4;
   stroke-linecap: round;
 }
 
-.setpoint {
+.setpointLine {
   fill: none;
-  stroke: var(--heat);
+  stroke: var(--accent);
   stroke-width: 2.5;
   stroke-linejoin: round;
 }
 
-.setpointStart {
-  fill: var(--heat);
+.setpointDot {
+  fill: var(--accent);
 }
 
-.now {
-  stroke: var(--ink);
+.nowLine {
+  stroke: var(--accent);
   stroke-width: 1.5;
-  stroke-dasharray: 4 4;
+  stroke-dasharray: 3 3;
 }
 
 .nowLabel {
-  font-family: var(--face-mono);
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  fill: var(--ink);
+  font-weight: 600;
+  fill: var(--accent);
 }
 
-.labelOutdoor {
-  font-family: var(--face-mono);
-  font-size: 14px;
-  fill: var(--ink-2);
+.phaseGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+  border-top: 1px solid var(--rule);
 }
 
-.labelSetpoint {
-  font-family: var(--face-mono);
-  font-size: 14px;
-  font-weight: 500;
-  fill: var(--heat-ink);
+.phaseColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-top: 16px;
+  margin-top: -1px;
+  border-top: 2px solid transparent;
+}
+
+.phaseColumn[data-active] {
+  border-top-color: var(--accent);
+}
+
+.phaseTop {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.phaseTemp {
+  font-size: 1.125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.phaseColumn[data-active] .phaseTemp {
+  color: var(--accent);
+}
+
+.phaseTitle {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.phaseTime {
+  margin-top: 2px;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+.phaseDetail {
+  margin-top: 6px;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 599px) {
+  .wide {
+    display: none;
+  }
+
+  .compact {
+    display: block;
+  }
+}
+
+@media (max-width: 639px) {
+  .phaseGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 }

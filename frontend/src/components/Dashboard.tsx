@@ -1,107 +1,47 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
-import {
-  AC_POWER_OPTIONS,
-  formatPercent,
-  formatRupiah,
-  MODE_LABEL,
-  MODES,
-  monthlyBill,
-} from "@/lib/comfort";
-import {
-  nowOffset,
-  tonightOutdoor,
-  wibWallClock,
-  type OutdoorPoint,
-} from "@/lib/night";
+import { HUMIDITY, MODE_LABEL, MODES, OUTDOOR } from "@/lib/comfort";
 import { useComfortDispatch, useComfortState } from "./ComfortProvider";
 import { useRecommendation } from "./useRecommendation";
-import SegmentDisplay from "./SegmentDisplay";
-import NightChart from "./NightChart";
 import styles from "./Dashboard.module.css";
-
-// A typical cool night in Yogyakarta, used when the hourly forecast is missing.
-// x is hours after 21.00; labelled "contoh" so it is never passed off as live.
-const SAMPLE_OUTDOOR: OutdoorPoint[] = [
-  { x: 0, temp: 27.2 },
-  { x: 1, temp: 26.7 },
-  { x: 2, temp: 26.1 },
-  { x: 3, temp: 25.6 },
-  { x: 4, temp: 25.2 },
-  { x: 5, temp: 24.8 },
-  { x: 6, temp: 24.5 },
-  { x: 7, temp: 24.2 },
-  { x: 8, temp: 24.0 },
-  { x: 9, temp: 24.1 },
-  { x: 10, temp: 24.8 },
-];
-
-// Minute-resolution WIB clock. Server snapshot is null, so prerender and the
-// first client render both show placeholders; the real values fill after mount.
-function subscribeMinute(onChange: () => void) {
-  const id = window.setInterval(onChange, 15_000);
-  return () => window.clearInterval(id);
-}
-function getMinute(): number | null {
-  return Math.floor(Date.now() / 60_000);
-}
-function getServerMinute(): number | null {
-  return null;
-}
 
 export default function Dashboard() {
   const { weather, controls } = useComfortState();
   const dispatch = useComfortDispatch();
   const { rec } = useRecommendation(controls.outdoorTemp, controls.humidity, controls.mode);
-  const bill = monthlyBill(rec.savingsPercent, 30, controls.acPowerKw, controls.tariffPerKwh);
 
-  const minute = useSyncExternalStore(subscribeMinute, getMinute, getServerMinute);
-  const wibNow = minute === null ? null : wibWallClock(minute * 60_000);
-
-  const live = weather.status === "live" ? weather : null;
-  // Only use the real line once we are mounted (wibNow known) and the window is
-  // fully covered; otherwise draw the sample curve.
-  const realOutdoor = live && wibNow ? tonightOutdoor(live.hourly, wibNow) : null;
-  const outdoor = realOutdoor ?? SAMPLE_OUTDOOR;
-  const outdoorIsLive = realOutdoor !== null;
-
-  const nowX = wibNow ? nowOffset(wibNow) : null;
-
-  const setpointLabel = controls.power ? `${rec.setpoint} derajat Celsius` : "AC mati";
-
-  const chartCaption = outdoorIsLive
-    ? "Garis suhu luar dari prakiraan Open-Meteo. Garis ComfyAir mengikuti profil tidur."
-    : "Garis suhu luar adalah angka contoh. Garis ComfyAir mengikuti profil tidur.";
+  const atMinTemp = controls.outdoorTemp <= OUTDOOR.min;
+  const atMaxTemp = controls.outdoorTemp >= OUTDOOR.max;
+  const atMinHum = controls.humidity <= HUMIDITY.min;
+  const atMaxHum = controls.humidity >= HUMIDITY.max;
 
   return (
-    <main className={styles.dashboard}>
-      <div className="wrap">
-        <div className={styles.grid}>
-          {/* A. Setpoint sekarang */}
-          <section aria-labelledby="panel-setpoint" className={`${styles.panel} ${styles.setpointPanel}`}>
-            <p id="panel-setpoint" className={`label ${styles.panelLabel}`}>
-              Setpoint sekarang
+    <main id="main-content" className={styles.main}>
+      <div className="container">
+        <h1 className="visually-hidden">Dasbor ComfyAir</h1>
+
+        <div className={styles.dashboardGrid}>
+          <section aria-labelledby="section-setpoint" className={styles.setpointCol}>
+            <h2 id="section-setpoint" className={styles.blockLabel}>
+              Setpoint
+            </h2>
+
+            <p
+              className={styles.setpointValue}
+              data-off={controls.power ? undefined : ""}
+            >
+              {controls.power ? rec.setpoint : "--"}
+              <span className={styles.setpointUnit}>°C</span>
             </p>
 
-            <div className={controls.power ? styles.lcd : `${styles.lcd} ${styles.lcdOff}`}>
-              <SegmentDisplay
-                setpoint={rec.setpoint}
-                mode={controls.mode}
-                power={controls.power}
-                outdoorTemp={controls.outdoorTemp}
-                humidity={controls.humidity}
-              />
-            </div>
-
-            <div className={styles.setpointControls}>
+            <div className={styles.controlRow}>
               <fieldset className={styles.modeField}>
                 <legend className="visually-hidden">Mode</legend>
-                <div role="radiogroup" aria-label="Mode" className={styles.modes}>
+                <div role="radiogroup" aria-label="Mode" className={styles.segmented}>
                   {MODES.map((m) => (
                     <label
                       key={m}
-                      className={styles.modeOption}
+                      className={styles.segmentOption}
                       data-checked={m === controls.mode ? "" : undefined}
                     >
                       <input
@@ -110,7 +50,7 @@ export default function Dashboard() {
                         value={m}
                         checked={m === controls.mode}
                         onChange={() => dispatch({ type: "mode/set", mode: m })}
-                        className={styles.radio}
+                        className={styles.radioInput}
                       />
                       {MODE_LABEL[m]}
                     </label>
@@ -120,7 +60,7 @@ export default function Dashboard() {
 
               <button
                 type="button"
-                className={styles.power}
+                className={styles.powerButton}
                 aria-pressed={controls.power}
                 onClick={() => dispatch({ type: "power/toggle" })}
               >
@@ -130,103 +70,100 @@ export default function Dashboard() {
 
             <p className="visually-hidden" aria-live="polite" aria-atomic="true">
               {controls.power
-                ? `Setpoint ${setpointLabel}, mode ${MODE_LABEL[controls.mode]}.`
+                ? `Setpoint ${rec.setpoint} derajat Celsius, mode ${MODE_LABEL[controls.mode]}.`
                 : "AC dimatikan."}
             </p>
           </section>
 
-          {/* B. Cuaca luar */}
-          <section aria-labelledby="panel-cuaca" className={styles.panel}>
-            <p id="panel-cuaca" className={`label ${styles.panelLabel}`}>
-              Cuaca luar
-            </p>
-            <p className={styles.bigNumber}>
-              {live ? Math.round(live.temp) : controls.outdoorTemp}
-              <span className={styles.unit}>°C</span>
-            </p>
-            <p className={styles.subNumber}>
-              lembap {live ? Math.round(live.humidity) : controls.humidity}%
-            </p>
-            <p className={styles.meta}>
-              {live ? `diperbarui ${live.observedAt} WIB` : "menunggu data"}
-            </p>
-            <p className={styles.sourceSmall}>
-              {weather.status === "live"
-                ? "Open-Meteo live"
-                : weather.status === "sample"
-                  ? "angka contoh"
-                  : "membaca…"}
-            </p>
-          </section>
-
-          {/* B2. Spesifikasi AC */}
-          <section aria-labelledby="panel-specs" className={`${styles.panel} ${styles.specsPanel}`}>
-            <p id="panel-specs" className={`label ${styles.panelLabel}`}>
-              Spesifikasi AC
-            </p>
-
-            <div className={styles.specField}>
-              <label htmlFor="ac-power">Daya AC</label>
-              <select
-                id="ac-power"
-                className={styles.specInput}
-                value={controls.acPowerKw}
-                onChange={(e) => dispatch({ type: "acPower/set", value: Number(e.target.value) })}
-              >
-                {AC_POWER_OPTIONS.map((o) => (
-                  <option key={o.kw} value={o.kw}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
+          <section aria-labelledby="section-cuaca" className={styles.weatherCol}>
+            <div className={styles.weatherHeader}>
+              <h2 id="section-cuaca" className={styles.blockLabel}>
+                Cuaca
+              </h2>
+              {controls.touched ? (
+                <button
+                  type="button"
+                  className={styles.resetButton}
+                  onClick={() => dispatch({ type: "weather/reset" })}
+                >
+                  Reset
+                </button>
+              ) : weather.status === "sample" ? (
+                <span className={styles.sampleTag}>Contoh</span>
+              ) : null}
             </div>
 
-            <div className={styles.specField}>
-              <label htmlFor="ac-tariff">Tarif listrik (Rp/kWh)</label>
-              <input
-                id="ac-tariff"
-                className={styles.specInput}
-                type="number"
-                min={0}
-                step={0.01}
-                value={controls.tariffPerKwh}
-                onChange={(e) => {
-                  const v = Number(e.target.value);
-                  dispatch({
-                    type: "tariff/set",
-                    value: Number.isFinite(v) && v > 0 ? v : controls.tariffPerKwh,
-                  });
-                }}
-              />
+            <div className={styles.metricRows}>
+              <div className={styles.metricRow}>
+                <div className={styles.metricReadout}>
+                  <span className={styles.metricLabel} id="label-sim-temp">
+                    Suhu
+                  </span>
+                  <output className={styles.metricValue}>{controls.outdoorTemp}°C</output>
+                </div>
+                <div className={styles.stepper} role="group" aria-labelledby="label-sim-temp">
+                  <button
+                    type="button"
+                    className={styles.stepButton}
+                    aria-label="Turunkan suhu luar 1 derajat"
+                    aria-disabled={atMinTemp}
+                    onClick={() => {
+                      if (!atMinTemp) dispatch({ type: "temp/step", delta: -1 });
+                    }}
+                  >
+                    −
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.stepButton}
+                    aria-label="Naikkan suhu luar 1 derajat"
+                    aria-disabled={atMaxTemp}
+                    onClick={() => {
+                      if (!atMaxTemp) dispatch({ type: "temp/step", delta: 1 });
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div className={styles.metricRow}>
+                <div className={styles.metricReadout}>
+                  <span className={styles.metricLabel} id="label-sim-humidity">
+                    Kelembapan
+                  </span>
+                  <output className={styles.metricValue}>{controls.humidity}%</output>
+                </div>
+                <div
+                  className={styles.stepper}
+                  role="group"
+                  aria-labelledby="label-sim-humidity"
+                >
+                  <button
+                    type="button"
+                    className={styles.stepButton}
+                    aria-label="Turunkan kelembapan 5 persen"
+                    aria-disabled={atMinHum}
+                    onClick={() => {
+                      if (!atMinHum) dispatch({ type: "humidity/step", delta: -5 });
+                    }}
+                  >
+                    −
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.stepButton}
+                    aria-label="Naikkan kelembapan 5 persen"
+                    aria-disabled={atMaxHum}
+                    onClick={() => {
+                      if (!atMaxHum) dispatch({ type: "humidity/step", delta: 5 });
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
             </div>
-
-            <dl className={styles.ledger}>
-              <div className={styles.ledgerRow}>
-                <dt>Biaya di 20°C</dt>
-                <dd>{formatRupiah(bill.baselineRp)}</dd>
-              </div>
-              <div className={styles.ledgerRow}>
-                <dt>Biaya di {rec.setpoint}°C</dt>
-                <dd>{formatRupiah(bill.optimizedRp)}</dd>
-              </div>
-              <div className={`${styles.ledgerRow} ${styles.ledgerTotal}`}>
-                <dt>Hemat / bulan</dt>
-                <dd>{formatRupiah(bill.savedRp)}</dd>
-              </div>
-            </dl>
-            <p className={styles.footnote}>
-              {formatPercent(rec.savingsPercent)} lebih hemat · perkiraan 30 malam
-            </p>
-          </section>
-
-          {/* C. Malam ini */}
-          <section aria-label="Malam ini" className={`${styles.panel} ${styles.nightPanel}`}>
-            <NightChart
-              outdoor={outdoor}
-              nowX={nowX}
-              caption={chartCaption}
-              outdoorLabel={outdoorIsLive ? "suhu luar" : "suhu luar (contoh)"}
-            />
           </section>
         </div>
       </div>

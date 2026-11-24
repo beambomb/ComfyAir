@@ -18,12 +18,7 @@ export const MODE_LABEL: Record<Mode, string> = {
 
 export const DEFAULT_MODE: Mode = "SLEEP";
 
-/** ECO -> SLEEP -> COMFORT -> ECO, the order the MODE button cycles through. */
-export function nextMode(mode: Mode): Mode {
-  return MODES[(MODES.indexOf(mode) + 1) % MODES.length];
-}
-
-// Input bounds for the sentence form. `sample` is shown when live weather is unavailable.
+// Input bounds for outdoor simulation controls. `sample` is shown when live weather is unavailable.
 export const OUTDOOR = { min: 15, max: 40, step: 1, sample: 30 } as const;
 export const HUMIDITY = { min: 30, max: 100, step: 5, sample: 75 } as const;
 
@@ -105,8 +100,8 @@ export const ENERGY = {
   baselineSetpoint: 20,
 } as const;
 
-// Daya AC options for the dashboard "Spesifikasi AC" panel. The kW figures match
-// the ENERGY.acPowerKw convention (a 1 PK split AC draws roughly 0.8 kW).
+// Daya AC options for the dashboard. The kW figures match the ENERGY.acPowerKw
+// convention (a 1 PK split AC draws roughly 0.8 kW).
 export const AC_POWER_OPTIONS = [
   { label: "0,5 PK", kw: 0.4 },
   { label: "0,75 PK", kw: 0.6 },
@@ -124,10 +119,8 @@ export type MonthlyBill = {
 
 /**
  * Energy bill for a given number of nights. `nights` defaults to the 30-night
- * month, so existing callers (the Presentasi receipt) keep their exact numbers.
- * The dashboard passes 1 / 7 / 30. One consistent rule: cost = kWh x tariff,
- * round the baseline and optimized lines, then subtract so the printed total
- * always adds up.
+ * month. One consistent rule: cost = kWh x tariff, round the baseline and
+ * optimized lines, then subtract so the displayed total always adds up.
  */
 export function monthlyBill(
   savingsPct: number,
@@ -145,7 +138,7 @@ export function monthlyBill(
     baselineKwh: kwh,
     baselineRp,
     optimizedRp,
-    // Subtract the rounded lines so the printed receipt always adds up.
+    // Subtract the rounded lines so the displayed summary always adds up.
     savedRp: baselineRp - optimizedRp,
   };
 }
@@ -153,10 +146,6 @@ export function monthlyBill(
 // Decimal formatting only. `style: "currency"` inserts spacing characters that
 // differ between ICU versions (Node prerender vs. the visitor's browser).
 const rupiahNumber = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 });
-const tariffNumber = new Intl.NumberFormat("id-ID", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
 const percentNumber = new Intl.NumberFormat("id-ID", {
   minimumFractionDigits: 1,
   maximumFractionDigits: 1,
@@ -166,11 +155,6 @@ const kwhNumber = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 1 });
 /** 277382 -> "Rp277.382" */
 export function formatRupiah(value: number): string {
   return `Rp${rupiahNumber.format(value)}`;
-}
-
-/** "Rp1.444,70" */
-export function formatTariff(): string {
-  return `Rp${tariffNumber.format(ENERGY.tariffPerKwh)}`;
 }
 
 /** 45.5 -> "45,5%" */

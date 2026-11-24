@@ -1,0 +1,143 @@
+.main {
+  padding-block: clamp(32px, 5vw, 56px) clamp(48px, 7vw, 76px);
+}
+
+.heading {
+  font-size: clamp(1.375rem, 2.8vw, 1.625rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.desc {
+  margin-top: 10px;
+  margin-bottom: 28px;
+  max-width: 68ch;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.savingsGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 48px;
+  align-items: start;
+}
+
+.configCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.formFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.fieldControl {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  background-color: var(--bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius);
+}
+
+.fieldControl:hover {
+  border-color: var(--rule-strong);
+}
+
+.fieldControl:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.baselineSummary {
+  margin-top: 14px;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+.costList {
+  display: flex;
+  flex-direction: column;
+}
+
+.costRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 12px;
+  border-top: 1px solid var(--rule);
+}
+
+.costRow dt {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+}
+
+.costRow dd {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.totalRow {
+  border-top: 2px solid var(--rule-strong);
+  padding-top: 14px;
+  padding-bottom: 0;
+}
+
+.totalLabel {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.totalPct {
+  margin-left: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.costRow.totalRow dd.totalValue {
+  font-size: clamp(1.375rem, 3vw, 1.75rem);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+@media (max-width: 767px) {
+  .savingsGrid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+
+@media (max-width: 419px) {
+  .formFields {
+    grid-template-columns: 1fr;
+  }
+}

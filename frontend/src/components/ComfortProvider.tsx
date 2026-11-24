@@ -6,7 +6,6 @@ import {
   DEFAULT_MODE,
   ENERGY,
   HUMIDITY,
-  nextMode,
   OUTDOOR,
   snapHumidity,
   type Mode,
@@ -42,10 +41,10 @@ export type ComfortState = { weather: WeatherState; controls: Controls };
 export type ComfortAction =
   | { type: "weather/live"; temp: number; humidity: number; observedAt: string; hourly: HourlyPoint[] }
   | { type: "weather/sample" }
+  | { type: "weather/reset" }
   | { type: "temp/step"; delta: 1 | -1 }
   | { type: "humidity/step"; delta: 5 | -5 }
   | { type: "mode/set"; mode: Mode }
-  | { type: "mode/cycle" }
   | { type: "power/toggle" }
   | { type: "acPower/set"; value: number }
   | { type: "tariff/set"; value: number };
@@ -91,6 +90,27 @@ function reducer(state: ComfortState, action: ComfortAction): ComfortState {
     case "weather/sample":
       // Controls already hold the sample values (30 C, 75 %).
       return { ...state, weather: { status: "sample" } };
+    case "weather/reset":
+      if (state.weather.status === "live") {
+        return {
+          ...state,
+          controls: {
+            ...controls,
+            outdoorTemp: clampOutdoor(state.weather.temp),
+            humidity: snapHumidity(state.weather.humidity),
+            touched: false,
+          },
+        };
+      }
+      return {
+        ...state,
+        controls: {
+          ...controls,
+          outdoorTemp: OUTDOOR.sample,
+          humidity: HUMIDITY.sample,
+          touched: false,
+        },
+      };
     case "temp/step":
       return {
         ...state,
@@ -111,8 +131,6 @@ function reducer(state: ComfortState, action: ComfortAction): ComfortState {
       };
     case "mode/set":
       return { ...state, controls: { ...controls, mode: action.mode } };
-    case "mode/cycle":
-      return { ...state, controls: { ...controls, mode: nextMode(controls.mode) } };
     case "power/toggle":
       return { ...state, controls: { ...controls, power: !controls.power } };
     case "acPower/set":

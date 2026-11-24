@@ -1,44 +1,25 @@
-/* ComfyAir: warm paper, thin ink rules, three typefaces. */
+/* ComfyAir: pure white canvas, crisp typography, single blue accent. */
 
 :root {
-  /* Paper */
-  --paper: #f3eee5;
-  --paper-2: #e9e2d5;
-  --receipt: #fbf8f2;
+  --bg: #ffffff;
+  --surface-muted: #f2f4f7;
+  --surface-hover: #e6e9ef;
 
-  /* Ink */
-  --ink: #1b1814;
-  --ink-2: #5e564b;
-  --rule: rgba(27, 24, 20, 0.18);
+  --rule: #d9dde3;
+  --rule-strong: #111111;
+  --input-border: #b8bfc8;
 
-  /* Accents. --heat only for graphics and text of 24px or more; --heat-ink for small text. */
-  --heat: #c2461f;
-  --heat-ink: #a8391a;
+  --text: #0a0a0a;
+  --text-secondary: #525252;
 
-  /* Night band */
-  --night: #18213d;
-  --night-2: #26304f;
-  --heat-light: #e07a55;
-  --paper-dim: #bdb6a8;
-  --cold: #9dbad9;
+  --accent: #0057d9;
+  --accent-hover: #0044ad;
 
-  /* Remote */
-  --lcd: #c5ceb0;
-  --lcd-ink: #1d2519;
-  --plastic: #ede8df;
-  --plastic-shade: #d6cfc2;
+  --font-body: var(--font-barlow), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
 
-  --face-display: var(--font-display), Georgia, serif;
-  --face-text: var(--font-text), system-ui, sans-serif;
-  --face-mono: var(--font-mono), ui-monospace, monospace;
-
-  --gutter: clamp(20px, 4vw, 56px);
-  --wrap: 1320px;
-  --col-gap: clamp(16px, 2vw, 28px);
-  --focus: var(--ink);
-
-  /* Paper grain: ink-colored fractal noise at a few percent alpha. Tiles seamlessly. */
-  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .106 0 0 0 0 .094 0 0 0 0 .078 0 0 0 .075 0'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
+  --radius: 6px;
+  --container-max: 960px;
 }
 
 *,
@@ -53,7 +34,6 @@ h2,
 h3,
 p,
 figure,
-blockquote,
 dl,
 dd,
 ol,
@@ -64,41 +44,41 @@ ul {
 ol,
 ul {
   padding: 0;
+  list-style: none;
 }
 
 html {
-  background-color: var(--paper);
-  background-image: var(--grain);
-  color: var(--ink);
+  background-color: var(--bg);
+  color: var(--text);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
+  overflow-x: clip;
 }
 
 body {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  font-family: var(--face-text);
-  font-size: 1.0625rem;
-  line-height: 1.6;
-  font-kerning: normal;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  background-color: var(--bg);
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
 }
 
 h1,
 h2,
 h3 {
   font-size: inherit;
-  font-weight: inherit;
+  font-weight: 600;
 }
 
 button,
 input,
+select,
 output {
   font: inherit;
   color: inherit;
@@ -111,46 +91,20 @@ a {
 }
 
 :focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 3px;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 ::selection {
-  background: var(--lcd);
-  color: var(--lcd-ink);
+  background: var(--accent);
+  color: #ffffff;
 }
 
-/* Layout and type utilities */
-
-.wrap {
+.container {
   width: 100%;
-  max-width: calc(var(--wrap) + 2 * var(--gutter));
+  max-width: var(--container-max);
   margin-inline: auto;
-  padding-inline: var(--gutter);
-}
-
-.label {
-  font-family: var(--face-mono);
-  font-size: 0.75rem;
-  font-weight: 500;
-  line-height: 1.4;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.headline {
-  font-family: var(--face-display);
-  font-weight: 400;
-  font-variation-settings: "SOFT" 100;
-  font-optical-sizing: auto;
-  font-variant-numeric: lining-nums;
-  line-height: 0.95;
-  letter-spacing: -0.015em;
-  text-wrap: balance;
-}
-
-.headline em {
-  font-style: italic;
+  padding-inline: clamp(16px, 4vw, 32px);
 }
 
 .visually-hidden {
@@ -169,16 +123,14 @@ a {
 .skip-link {
   position: absolute;
   top: 0;
-  left: var(--gutter);
-  z-index: 20;
-  padding: 0.7rem 1rem;
-  background: var(--ink);
-  color: var(--paper);
-  font-family: var(--face-mono);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  left: clamp(16px, 4vw, 32px);
+  z-index: 50;
+  padding: 0.65rem 1rem;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0 0 var(--radius) var(--radius);
   text-decoration: none;
   transform: translateY(-120%);
 }
@@ -187,7 +139,6 @@ a {
   transform: translateY(0);
 }
 
-/* Motion safety net. Components also switch their own animations off. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

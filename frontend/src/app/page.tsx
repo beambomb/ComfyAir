@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Dashboard from "@/components/Dashboard";
 
 export const metadata: Metadata = {
-  title: "ComfyAir · Dasbor",
+  title: "ComfyAir",
   description:
-    "Dasbor ComfyAir: setpoint AC dari cuaca luar, grafik suhu malam, dan perkiraan hemat listrik sesuai spesifikasi AC-mu.",
+    "Pengaturan suhu AC adaptif berdasarkan cuaca Yogyakarta dan estimasi penghematan listrik bulanan.",
 };
 
 export default function Home() {
