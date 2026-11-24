@@ -1,30 +1,17 @@
 import {
-  PHASES,
-  SETPOINT_STEPS,
+  DEFAULT_SLEEP_PROFILE,
   WINDOW_HOURS,
+  buildSleepSchedule,
   hourLabel,
   type OutdoorPoint,
+  type SetpointStep,
+  type SleepPhaseItem,
 } from "@/lib/night";
 import styles from "./NightChart.module.css";
 
 const Y_MIN = 16;
 const Y_MAX = 32;
 const Y_TICKS = [18, 22, 26, 30];
-
-const PHASE_COPY: Record<string, { title: string; detail: string }> = {
-  "Mulai tidur": {
-    title: "Mulai tidur",
-    detail: "Suhu sejuk membantu tubuh lebih cepat terlelap.",
-  },
-  "Tidur nyenyak": {
-    title: "Tidur nyenyak",
-    detail: "Suhu dinaikkan mengikuti metabolisme tubuh yang melambat.",
-  },
-  Bangun: {
-    title: "Menjelang bangun",
-    detail: "Diturunkan ringan agar bangun terasa lebih segar.",
-  },
-};
 
 type ChartLayout = {
   variant: "wide" | "compact";
@@ -83,10 +70,14 @@ function smoothPath(points: [number, number][]): string {
 function ChartSvg({
   layout,
   outdoor,
+  steps,
+  isActive,
   nowX,
 }: {
   layout: ChartLayout;
   outdoor: OutdoorPoint[];
+  steps: readonly SetpointStep[];
+  isActive: boolean;
   nowX: number | null;
 }) {
   const xScale = (hour: number) =>
@@ -96,10 +87,8 @@ function ChartSvg({
 
   const outdoorPath = smoothPath(outdoor.map((p) => [xScale(p.x), yScale(p.temp)]));
   const setpointPath =
-    `M${xScale(SETPOINT_STEPS[0].from)} ${yScale(SETPOINT_STEPS[0].temp)}` +
-    SETPOINT_STEPS.map((s, i) => (i === 0 ? "" : ` V${yScale(s.temp)}`) + ` H${xScale(s.to)}`).join(
-      "",
-    );
+    `M${xScale(steps[0].from)} ${yScale(steps[0].temp)}` +
+    steps.map((s, i) => (i === 0 ? "" : ` V${yScale(s.temp)}`) + ` H${xScale(s.to)}`).join("");
 
   const nowAnchor =
     nowX === null ? "middle" : nowX < 1 ? "start" : nowX > WINDOW_HOURS - 1 ? "end" : "middle";
@@ -184,12 +173,15 @@ function ChartSvg({
       )}
 
       <path d={outdoorPath} className={styles.outdoorLine} />
-      <path d={setpointPath} className={styles.setpointLine} />
+      <path
+        d={setpointPath}
+        className={isActive ? styles.setpointLine : `${styles.setpointLine} ${styles.setpointPaused}`}
+      />
       <circle
-        cx={xScale(SETPOINT_STEPS[0].from)}
-        cy={yScale(SETPOINT_STEPS[0].temp)}
+        cx={xScale(steps[0].from)}
+        cy={yScale(steps[0].temp)}
         r={3.5}
-        className={styles.setpointDot}
+        className={isActive ? styles.setpointDot : `${styles.setpointDot} ${styles.dotPaused}`}
       />
     </svg>
   );
@@ -198,20 +190,42 @@ function ChartSvg({
 type NightChartProps = {
   outdoor: OutdoorPoint[];
   nowX: number | null;
+  steps?: readonly SetpointStep[];
+  phases?: readonly SleepPhaseItem[];
+  isActive?: boolean;
 };
 
-export default function NightChart({ outdoor, nowX }: NightChartProps) {
+const DEFAULT_SCHEDULE = buildSleepSchedule(DEFAULT_SLEEP_PROFILE);
+
+export default function NightChart({
+  outdoor,
+  nowX,
+  steps = DEFAULT_SCHEDULE.steps,
+  phases = DEFAULT_SCHEDULE.phases,
+  isActive = true,
+}: NightChartProps) {
   return (
     <div className={styles.wrapper}>
       <div className={styles.chartFrame}>
-        <ChartSvg layout={WIDE} outdoor={outdoor} nowX={nowX} />
-        <ChartSvg layout={COMPACT} outdoor={outdoor} nowX={nowX} />
+        <ChartSvg
+          layout={WIDE}
+          outdoor={outdoor}
+          steps={steps}
+          isActive={isActive}
+          nowX={nowX}
+        />
+        <ChartSvg
+          layout={COMPACT}
+          outdoor={outdoor}
+          steps={steps}
+          isActive={isActive}
+          nowX={nowX}
+        />
       </div>
 
       <ul className={styles.phaseGrid} aria-label="Tahapan suhu tidur">
-        {PHASES.map((phase) => {
-          const active = nowX !== null && nowX >= phase.from && nowX < phase.to;
-          const copy = PHASE_COPY[phase.name] ?? { title: phase.name, detail: "" };
+        {phases.map((phase) => {
+          const active = isActive && nowX !== null && nowX >= phase.from && nowX < phase.to;
           return (
             <li
               key={phase.name}
@@ -220,12 +234,12 @@ export default function NightChart({ outdoor, nowX }: NightChartProps) {
             >
               <div className={styles.phaseTop}>
                 <span className={styles.phaseTemp}>{phase.temp}°C</span>
-                <span className={styles.phaseTitle}>{copy.title}</span>
+                <span className={styles.phaseTitle}>{phase.name}</span>
               </div>
               <p className={styles.phaseTime}>
                 {hourLabel(phase.from)}–{hourLabel(phase.to)} WIB
               </p>
-              <p className={styles.phaseDetail}>{copy.detail}</p>
+              <p className={styles.phaseDetail}>{phase.detail}</p>
             </li>
           );
         })}

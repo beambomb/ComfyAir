@@ -1,14 +1,21 @@
 "use client";
 
+import { CITIES } from "@/lib/cities";
 import { HUMIDITY, MODE_LABEL, MODES, OUTDOOR } from "@/lib/comfort";
 import { useComfortDispatch, useComfortState } from "./ComfortProvider";
 import { useRecommendation } from "./useRecommendation";
 import styles from "./Dashboard.module.css";
 
 export default function Dashboard() {
-  const { weather, controls } = useComfortState();
+  const { city, weather, controls, auth } = useComfortState();
   const dispatch = useComfortDispatch();
-  const { rec } = useRecommendation(controls.outdoorTemp, controls.humidity, controls.mode);
+  const { rec } = useRecommendation(
+    controls.outdoorTemp,
+    controls.humidity,
+    controls.mode,
+    controls.acPowerKw,
+    auth.accessToken,
+  );
 
   const atMinTemp = controls.outdoorTemp <= OUTDOOR.min;
   const atMaxTemp = controls.outdoorTemp >= OUTDOOR.max;
@@ -68,6 +75,12 @@ export default function Dashboard() {
               </button>
             </div>
 
+            <p className={styles.modelNote}>
+              {controls.power
+                ? `Indeks panas ${rec.heatIndexC}°C, ${rec.modelUsed}`
+                : "AC dalam keadaan mati"}
+            </p>
+
             <p className="visually-hidden" aria-live="polite" aria-atomic="true">
               {controls.power
                 ? `Setpoint ${rec.setpoint} derajat Celsius, mode ${MODE_LABEL[controls.mode]}.`
@@ -80,17 +93,33 @@ export default function Dashboard() {
               <h2 id="section-cuaca" className={styles.blockLabel}>
                 Cuaca
               </h2>
-              {controls.touched ? (
-                <button
-                  type="button"
-                  className={styles.resetButton}
-                  onClick={() => dispatch({ type: "weather/reset" })}
+
+              <div className={styles.weatherActions}>
+                {controls.touched ? (
+                  <button
+                    type="button"
+                    className={styles.resetButton}
+                    onClick={() => dispatch({ type: "weather/reset" })}
+                  >
+                    Reset
+                  </button>
+                ) : weather.status === "sample" ? (
+                  <span className={styles.sampleTag}>Contoh</span>
+                ) : null}
+
+                <select
+                  aria-label="Pilih kota"
+                  className={styles.citySelect}
+                  value={city}
+                  onChange={(e) => dispatch({ type: "city/set", city: e.target.value })}
                 >
-                  Reset
-                </button>
-              ) : weather.status === "sample" ? (
-                <span className={styles.sampleTag}>Contoh</span>
-              ) : null}
+                  {CITIES.map((c) => (
+                    <option key={c.name} value={c.name}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className={styles.metricRows}>

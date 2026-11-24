@@ -1,29 +1,40 @@
 import { useEffect, useState } from "react";
 import { fetchPrediction } from "@/lib/api";
 import { localRecommendation, type Mode, type Recommendation } from "@/lib/comfort";
+import { kwToPk } from "./ComfortProvider";
 
 export type ApiLink = "unknown" | "online" | "offline";
 
-const DEBOUNCE_MS = 250;
+const DEBOUNCE_MS = 220;
 
-/**
- * Setpoint for the current inputs.
- *
- * The in-browser port answers instantly. A debounced POST to the backend runs
- * after every change; once the API has answered at least once, its last value
- * stays on screen while the next request is pending, so the display never
- * flips between the two sources. Any failure switches to the local formula.
- */
-export function useRecommendation(outdoorTemp: number, humidity: number, mode: Mode) {
-  const key = `${outdoorTemp}|${humidity}|${mode}`;
-  const local = localRecommendation(outdoorTemp, mode);
+export function useRecommendation(
+  outdoorTemp: number,
+  humidity: number,
+  mode: Mode,
+  acPowerKw: number = 0.8,
+  token?: string | null,
+) {
+  const acPowerPk = kwToPk(acPowerKw);
+  const key = `${outdoorTemp}|${humidity}|${mode}|${acPowerPk}`;
+  const local = localRecommendation(outdoorTemp, mode, humidity);
   const [settled, setSettled] = useState<{ key: string; rec: Recommendation } | null>(null);
   const [link, setLink] = useState<ApiLink>("unknown");
 
   useEffect(() => {
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
-      fetchPrediction({ outdoor_temp: outdoorTemp, humidity, mode }, controller.signal)
+      const wibHour = new Date(Date.now() + 7 * 60 * 60 * 1000).getUTCHours();
+      fetchPrediction(
+        {
+          outdoor_temp: outdoorTemp,
+          humidity,
+          mode,
+          hour: wibHour,
+          ac_power_pk: acPowerPk,
+        },
+        controller.signal,
+        token,
+      )
         .then((prediction) => {
           if (controller.signal.aborted) return;
           setSettled({
@@ -32,13 +43,17 @@ export function useRecommendation(outdoorTemp: number, humidity: number, mode: M
               setpoint: prediction.recommended_setpoint,
               savingsPercent: prediction.estimated_savings_percent,
               source: "api",
+              heatIndexC: prediction.heat_index_c,
+              rawPredictedTemp: prediction.raw_predicted_temp,
+              modelUsed: prediction.model_used,
+              modelR2: prediction.model_r2,
             },
           });
           setLink("online");
         })
         .catch(() => {
           if (controller.signal.aborted) return;
-          setSettled({ key, rec: localRecommendation(outdoorTemp, mode) });
+          setSettled({ key, rec: localRecommendation(outdoorTemp, mode, humidity) });
           setLink("offline");
         });
     }, DEBOUNCE_MS);
@@ -47,7 +62,7 @@ export function useRecommendation(outdoorTemp: number, humidity: number, mode: M
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [key, outdoorTemp, humidity, mode]);
+  }, [key, outdoorTemp, humidity, mode, acPowerPk, token]);
 
   const rec = settled && (settled.key === key || link === "online") ? settled.rec : local;
   return { rec, link };

@@ -4,12 +4,14 @@ import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { formatWibTime } from "@/lib/dateline";
+import { useComfortState } from "./ComfortProvider";
 import styles from "./Header.module.css";
 
 const NAV_ITEMS = [
   { href: "/", label: "Dasbor" },
   { href: "/grafik", label: "Grafik" },
   { href: "/penghematan", label: "Penghematan" },
+  { href: "/akun", label: "Akun" },
 ] as const;
 
 function isActive(pathname: string, href: string): boolean {
@@ -33,6 +35,7 @@ function getServerMinute(): number | null {
 
 export default function Header() {
   const pathname = usePathname();
+  const { city } = useComfortState();
   const minute = useSyncExternalStore(subscribeMinute, getMinute, getServerMinute);
   const wib = minute === null ? null : formatWibTime(minute * 60_000);
 
@@ -82,7 +85,12 @@ export default function Header() {
         </nav>
 
         <p className={styles.location}>
-          Yogyakarta{wib ? <>, <time dateTime={wib.iso}>{wib.text}</time></> : null}
+          {city}
+          {wib ? (
+            <>
+              , <time dateTime={wib.iso}>{wib.text}</time>
+            </>
+          ) : null}
         </p>
       </div>
     </header>

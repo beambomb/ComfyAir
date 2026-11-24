@@ -13,6 +13,9 @@ dist/
 # Python / Backend
 __pycache__/
 *.pyc
+.pytest_cache/
+backend/*.db
+backend/*.sqlite3
 backend/.venv/
 backend/env/
 backend/venv/

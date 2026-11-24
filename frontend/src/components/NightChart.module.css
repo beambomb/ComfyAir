@@ -49,8 +49,17 @@
   stroke-linejoin: round;
 }
 
+.setpointPaused {
+  stroke: #9ca3af;
+  stroke-dasharray: 3 3;
+}
+
 .setpointDot {
   fill: var(--accent);
+}
+
+.dotPaused {
+  fill: #9ca3af;
 }
 
 .nowLine {

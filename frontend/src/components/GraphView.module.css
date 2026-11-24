@@ -55,3 +55,131 @@
   line-height: 1.55;
   color: var(--text-secondary);
 }
+
+/* Sleep Profile Configurator */
+.configSection {
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--rule);
+}
+
+.configHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.configTitle {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.toggleLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.toggleLabel input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.configGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.fieldControl {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  background-color: var(--bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius);
+}
+
+.fieldControl:hover {
+  border-color: var(--rule-strong);
+}
+
+.fieldControl:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.configActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.saveButton {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: var(--radius);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid var(--rule-strong);
+  background-color: transparent;
+  color: var(--text);
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.saveButton:hover:not(:disabled) {
+  background-color: var(--rule-strong);
+  color: #ffffff;
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.statusText {
+  font-size: 0.875rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+@media (max-width: 719px) {
+  .configGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 399px) {
+  .saveButton {
+    width: 100%;
+  }
+}

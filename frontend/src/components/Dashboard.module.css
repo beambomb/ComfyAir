@@ -145,12 +145,25 @@
   border-color: var(--accent-hover);
 }
 
+.modelNote {
+  margin-top: 14px;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
 .weatherHeader {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 12px;
+}
+
+.weatherActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .sampleTag {
@@ -161,7 +174,7 @@
 .resetButton {
   min-height: 44px;
   padding: 0 4px;
-  margin-block: -10px;
+  margin-block: -6px;
   border: 0;
   background: transparent;
   font-size: 0.875rem;
@@ -173,6 +186,27 @@
 .resetButton:hover {
   color: var(--accent-hover);
   text-decoration: underline;
+}
+
+.citySelect {
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text);
+  background-color: var(--bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius);
+}
+
+.citySelect:hover {
+  border-color: var(--rule-strong);
+}
+
+.citySelect:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 .metricRows {
@@ -249,6 +283,11 @@
   .weatherCol {
     border-top: 1px solid var(--rule);
     padding-top: 28px;
+  }
+
+  .citySelect {
+    min-height: 44px;
+    font-size: 1rem;
   }
 }
 

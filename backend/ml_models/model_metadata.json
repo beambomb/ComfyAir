@@ -1,0 +1,63 @@
+{
+  "model_name": "GradientBoostingRegressor",
+  "version": "2.0.0",
+  "trained_at": "2026-11-24T10:16:41.123755+00:00",
+  "dataset_size": 2400,
+  "train_size": 1920,
+  "test_size": 480,
+  "features": [
+    "outdoor_temp",
+    "humidity",
+    "hour",
+    "mode_encoded",
+    "heat_index_c",
+    "ac_power_pk"
+  ],
+  "cv_r2_mean": 0.972,
+  "cv_r2_std": 0.004,
+  "test_r2": 0.974,
+  "test_mae": 0.1463,
+  "test_rmse": 0.2031,
+  "feature_importances": {
+    "outdoor_temp": 0.6767,
+    "humidity": 0.0253,
+    "hour": 0.0568,
+    "mode_encoded": 0.2364,
+    "heat_index_c": 0.0032,
+    "ac_power_pk": 0.0016
+  },
+  "benchmarks": [
+    {
+      "model_name": "GradientBoostingRegressor",
+      "cv_r2_mean": 0.972,
+      "cv_r2_std": 0.004,
+      "test_r2": 0.974,
+      "test_mae": 0.1463,
+      "test_rmse": 0.2031
+    },
+    {
+      "model_name": "RandomForestRegressor",
+      "cv_r2_mean": 0.9678,
+      "cv_r2_std": 0.0041,
+      "test_r2": 0.967,
+      "test_mae": 0.1489,
+      "test_rmse": 0.2288
+    },
+    {
+      "model_name": "Ridge",
+      "cv_r2_mean": 0.7714,
+      "cv_r2_std": 0.0177,
+      "test_r2": 0.7635,
+      "test_mae": 0.4904,
+      "test_rmse": 0.6128
+    },
+    {
+      "model_name": "LinearRegression",
+      "cv_r2_mean": 0.7714,
+      "cv_r2_std": 0.0177,
+      "test_r2": 0.7634,
+      "test_mae": 0.4902,
+      "test_rmse": 0.6129
+    }
+  ]
+}
