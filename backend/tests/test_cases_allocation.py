@@ -13,9 +13,9 @@ BACKEND_DIR = Path(__file__).resolve().parents[1]
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
-from app.core.storage import reset_storage  # noqa: E402
-from app.services.weather_service import weather_service  # noqa: E402
-from main import app  # noqa: E402
+from app.core.storage import reset_storage  
+from app.services.weather_service import weather_service  
+from main import app  
 
 
 @pytest.fixture()
@@ -38,9 +38,7 @@ def _login_demo(client: TestClient) -> str:
     return res.json()["access_token"]
 
 
-# ---------------------------------------------------------------------------
 # 1. Prediksi Rekomendasi Suhu AC (ML) - 6 Test Cases
-# ---------------------------------------------------------------------------
 
 
 def test_tc01_predict_eco_normal_condition(client: TestClient):
@@ -127,9 +125,7 @@ def test_tc06_predict_with_authenticated_personal_bias(client: TestClient):
     assert calibrated.json()["raw_predicted_temp"] > base["raw_predicted_temp"]
 
 
-# ---------------------------------------------------------------------------
 # 2. Autentikasi Pengguna (Register, Login, Refresh, Logout) - 5 Test Cases
-# ---------------------------------------------------------------------------
 
 
 def test_tc07_auth_register_new_user(client: TestClient):
@@ -189,9 +185,7 @@ def test_tc11_auth_refresh_rotation_and_logout(client: TestClient):
     )
 
 
-# ---------------------------------------------------------------------------
 # 3. Kalkulasi, Filter & Pencatatan Penghematan Listrik - 4 Test Cases
-# ---------------------------------------------------------------------------
 
 
 def test_tc12_savings_create_log_calculation(client: TestClient):
@@ -257,9 +251,7 @@ def test_tc15_savings_unauthorized_and_not_found(client: TestClient):
     assert res.status_code == 404
 
 
-# ---------------------------------------------------------------------------
 # 4. Kalibrasi Umpan Balik Kenyamanan (Feedback ML) - 3 Test Cases
-# ---------------------------------------------------------------------------
 
 
 def test_tc16_feedback_too_cold_increases_bias(client: TestClient):
@@ -314,9 +306,7 @@ def test_tc18_feedback_reset_clears_bias(client: TestClient):
     assert reset.json()["feedback_count"] == 0
 
 
-# ---------------------------------------------------------------------------
 # 5. Pengambilan Data Cuaca Real-Time Multi-Kota - 3 Test Cases
-# ---------------------------------------------------------------------------
 
 
 def test_tc19_weather_list_supported_cities(client: TestClient):
@@ -347,9 +337,7 @@ def test_tc21_weather_unsupported_city_returns_404(client: TestClient):
     assert res.status_code == 404
 
 
-# ---------------------------------------------------------------------------
 # 6. Pengelolaan Profil & Preferensi AC - 2 Test Cases
-# ---------------------------------------------------------------------------
 
 
 def test_tc22_preferences_get_default(client: TestClient):
@@ -375,10 +363,7 @@ def test_tc23_preferences_update_profile(client: TestClient):
     assert res.json()["preferred_city"] == "Jakarta"
 
 
-# ---------------------------------------------------------------------------
 # 7. Diagnostik Sistem & Telemetri WebSocket - 1 Test Case
-# ---------------------------------------------------------------------------
-
 
 def test_tc24_health_and_websocket_telemetry(client: TestClient):
     health = client.get("/api/v1/health")
